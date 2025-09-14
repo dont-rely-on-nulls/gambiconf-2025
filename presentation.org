@@ -6,7 +6,7 @@
 #+STARTUP: beamer
 #+AUTHOR: Marcos Benevides
 #+EMAIL: marcos.schonfinkel@gmail.com
-#+DATE: <2025-09-07 Sun>
+#+DATE: <2025-09-14 Sun> 
 #+DESCRIPTION: 
 #+KEYWORDS: 
 #+LANGUAGE:  pt
@@ -78,6 +78,18 @@ O projeto deve ter as seguintes características:
 
 ** Zig \leftrightarrow Raylib
 
+#+ATTR_BEAMER: :overlay +-
++ [[https://ziglang.org/][Zig]]: Uma linguagem de programação focada em *desempenho*, *segurança* e *controle
+  explícito* sobre a memória, também fornece boa *interoperabilidade* com C.
+
++ [[https://www.raylib.com/][raylib]]: Uma biblioteca para criar aplicativos gráficos e jogos, que fornece
+  uma API simples para gráficos, entrada e áudio.
+
+#+CAPTION: Lyceum, pre v0.1.0.
+#+NAME: fig:lyceum-pre-v0-1-0
+#+ATTR_LATEX: :width 0.5\linewidth
+[[./img/lyceum_pre_v_0_1_0.png]]
+
 ** Zig \harr C Nodes \leftrightarrow ~Erl_Interface~
 
 *** Interface com Erlang
@@ -113,18 +125,112 @@ O projeto deve ter as seguintes características:
 #+NAME: fig:zerl-presentation
 [[./img/zerl_presentation.jpg]]
 
+* Nix (Parte I)
 
-* Nix
+** Como montar o ambiente de desenvolvimento?
+
++ Zig
++ Erlang
++ PostgreSQL (com extensões)
+
+** Como modelar dependências
+
+#+begin_src shell 
+  nix-store --query \
+    --graph $(readlink -f $(which python)) > python.dot
+  dot -Tps python.dot -o img/nix_python.png
+  rm python.dot
+#+end_src
+
+#+CAPTION: Todas as dependências necessárias para rodar o interpretador do Python 3.13 
+#+ATTR_LATEX: :width \linewidth
+[[./img/nix_python.png]]
 
 ** O que é Nix?
 
+#+ATTR_LATEX: :width 0.7\linewidth
+[[./img/nix_the_declarative_trinity.png]]
+
+** Nix (Linguagem)
+
+Nix é uma linguagem de programação pura, funcional, /lazy/, declarativa e reproduzível.
+
+#+begin_quote
+Reprodutibilidade é um conceito de design de software, onde uma operação para as
+mesmas entradas produz a mesma saída.
+#+end_quote
+
+** Nix (Gerenciador de pacotes)
+
+#+ATTR_BEAMER: :overlay +-
++ ~nix~ é um gerenciador de pacotes puramente funcional.
++ Trata pacotes como *valores* em linguagens de programação puramente funcionais.
++ Sempre compila todo o /fecho transitivo/ (ou árvore de dependências) de um
+  pacote, porém, se uma dependência já estiver presente na ~/nix/store/~ (ou num
+  cache remoto), o ~nix~ pode usá-la, o que significa que pode fornecer
+  compilações incrementais.
+
+** Nix Store
+:PROPERTIES:
+:BEAMER_envargs: [allowframebreaks]
+:END:
+
+#+begin_src 
+/nix/store/b6gvzjyb2pg(...)54ad73z-firefox-33.1
+|---------||----------------------||-----------|
+  store             digest             name
+#+end_src
+
 ** Nixpkgs
 
-** Nix Shell
+#+CAPTION: Fonte: [[https://repology.org/repositories/graphs][Repology]] 
+#+ATTR_LATEX: :width 0.8\linewidth
+[[./img/nix_repology.png]]
+
+** NixOS
+
++ Distribuição GNU/Linux, completamente configurável e gerenciável via Nix
+  (linguagem) e ~nix~ (gerenciador de pacotes).
++ /Infrastructure as code/ desde 2003.
++ O estado e configuração do sistema é um /output/ da sua configuração, 
+
+** Gerações
+
+#+ATTR_LATEX: :width 0.8\linewidth
+#+CAPTION: Fonte: [[https://nixos.org/guides/how-nix-works/][How NixOS works]] 
+[[./img/nix_generations.png]]
 
 ** Nix não é Docker
+#+BEGIN_QUOTE
+"Mas nós já temos o Docker..."
+#+END_QUOTE
 
-** Devenv
++ Num ~Dockerfile~, você tem garantias de que um *mesmo comando* vai ser rodado na
+  *mesma ordem*, ou seja:
+  * Isso não significa que você vai ter o mesmo resultado *sempre*.
+  * *Repetibilidade* não é *reprodutibilidade*.
+
+** Nix Shells
+
+#+begin_src shell
+  › hello
+  hello: command not found
+  › nix shell nixpkgs#hello nixpkgs#cowsay
+  › hello
+  Hello, world!
+  › cowsay "Hello, world!"
+   _______
+  < hello >
+   -------
+          \   ^__^
+           \  (oo)\_______
+              (__)\       )\/\
+                  ||----w |
+                  ||     ||
+#+end_src
+#+CAPTION: Fonte:[[https://nixos-and-flakes.thiscute.world/development/intro#creating-a-custom-shell-environment-with-nix-shell][NixOS and Flakes book]] 
+
+** Nix Shells (e Devenv)
 
 + Configuração declarativa, que também permite a _composição_ de ambientes diferentes.
 + Configuração integrada para linguagens populares (Python, Rust, PHP,
@@ -144,14 +250,23 @@ ou, se você estiver usando [[https://github.com/direnv/direnv][direnv]] (com [[
 
 #+begin_src shell
   cd lyceum
-  nix develop --impure
 #+end_src
 
-** Escada de Abstrações
+seguindo dos seguintes comandos (em shells diferentes):
+
+#+begin_src shell
+  devenv up
+  server
+  client-release
+#+end_src
 
 * Erlang
 
 ** Erlang Node
+
+#+CAPTION: [cite: @beambook p.10 chapter.1 part.1.3.2]
+#+ATTR_LATEX: :width 0.7\linewidth
+[[./img/erlang_node.png]]
 
 ** Criando Processos com ~spawn/3~
 
@@ -228,27 +343,20 @@ ou, se você estiver usando [[https://github.com/direnv/direnv][direnv]] (com [[
 #+RESULTS: erlang-process-skeleton
 [[file:./img/erlang_process_skeleton.png]]
 
-** Let it Crash \rightarrow Let it Heal
-
-*** TODO Minor point about Erlang's Philosophy and how people misuderstand it
-
-** OTP (I)
-+ Open Telecom Platform
-
-*** TODO Minor points about history and why people at Ericsoon came up with OTP
-*** TODO Maybe reference this
+** OTP (Open Telecom Platform)
 
 #+BEGIN_QUOTE
-OTP is a domain-independent set of frameworks, principles, and patterns that
-guide and support the structure, design, implementation, and deployment of
-Erlang systems. Using OTP in your projects will help you avoid *accidental
-complexity: things that are difficult because you picked inadequate tools*.
+OTP é um conjunto de frameworks, princípios e padrões que guiam e alicerçam a
+estrutura, design, implementação e deploys de sistemas baseados em Erlang. Usar
+OTP sem seus projetos vai te ajudar a evitar *complexidade acidental: coisas que
+são difíceis por que você escolheu ferramentas inaquadas*.
 
-OTP is said to consist of three building blocks that, when used together,
-provide a solid approach to designing and developing systems in the problem
-domain we’ve just described. They are *Erlang* itself, *tools* and *libraries*, and a
-set of *design principles*. [cite:@cesarini2016designing p.4]
+[cite:@cesarini2016designing p.4]
 #+END_QUOTE
+
+** Let it Crash \rightarrow Let it Heal
+
++ Por muito tempo o 
 
 ** OTP Applications
 
@@ -427,7 +535,7 @@ digraph gen_server {
 #+CAPTION: [cite:@cesarini2016designing p.58 chapter.3]
 #+RESULTS: fig:erlang-gen_server
 [[file:./img/erlang-gen_server.png]]
-** ~gen_statem~ (I)
+** ~gen_statem~
 
 #+ATTR_BEAMER: :overlay +-
 + Gerenciamento de Estado Estruturado: Oferece uma interface para implementar
@@ -436,10 +544,6 @@ digraph gen_server {
   (chamadas, conversões, mensagens informativas, timeouts) e os encaminha para
   manipuladores de estado apropriados, com suporte para adiamento de eventos e
   geração interna de eventos.
-
-** ~gen_statem~ (II)
-
-*** TODO Show the player FSM
 
 ** Combinando as Estruturas (I)
 
@@ -868,15 +972,32 @@ digraph ServerUmbrella {
 
 * PostgreSQL
 
-** Schemas
-
-+ 
-  
-** 6NF
+** Schemas (6NF)
 
 ** Omnigres
 
-+ Trabalhamos junto com o mantenedor para empactor o projeto no nixpkgs.
++ Trabalhamos junto com o mantenedor para empacotar o projeto no nixpkgs.
+
+* Nix (Parte II)
+
+** Builds Puras (Demo #3)
+
+#+begin_src shell
+  # Server
+  nix build .#server
+
+  # Client
+  nix build .#client
+#+end_src
+
+** OCI Images (Demo #4)
+
+#+begin_src shell
+  # OCI Image
+  nix build .#dockerImage
+  docker load < ./result
+  docker container run --network=host lyceum:latest
+#+end_src
 
 * NixOS
 
@@ -884,15 +1005,19 @@ digraph ServerUmbrella {
 
 + 
   
-** NixOS (Demo #3)
+** NixOS (Demo #5)
 
-+ 
+#+TODO: Finish V2 deploy
 
 * Fim
 
 :PROPERTIES:
 :BEAMER_env: appendix
 :END:
+
+** Escada de Abstrações
+
++ Composição
 
 ** Perguntas?
 
