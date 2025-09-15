@@ -344,6 +344,25 @@ TSWLatexianTemp*
 # Uncomment the next line to have this generated file ignored.
 #*Notes.bib
 
+# Erlang
+.eunit
+*.o
+*.beam
+*.plt
+erl_crash.dump
+.concrete/DEV_MODE
+
+# rebar 2.x
+.rebar
+rel/example_project
+ebin/*.beam
+deps
+
+# rebar 3
+.rebar3
+_build/
+_checkouts/
+
 # Extras
 *.pdf
 *.tex

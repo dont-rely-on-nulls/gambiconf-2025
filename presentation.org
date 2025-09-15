@@ -4,7 +4,7 @@
 :SETTINGS:
 #+STARTUP: inlineimages
 #+STARTUP: beamer
-#+AUTHOR: Marcos Benevides
+#+AUTHOR: Marcos Benevides [[https://schonfinkel.github.io/][(schonfinkel.github.io]])
 #+EMAIL: marcos.schonfinkel@gmail.com
 #+DATE: <2025-09-14 Sun> 
 #+DESCRIPTION: 
@@ -103,8 +103,6 @@ O projeto deve ter as seguintes características:
   nativamente pela BEAM participem de clusters Erlang.
 + Utilizam a biblioteca ~Erl_Interface~ para se comunicar com outros nós via
   TCP/IP, como se fossem nós Erlang nativos.
-+ A ~Erl_Interface~ fornece funções para integrar programas em C com sistemas
-  Erlang, servindo como base para a criação de ~C Nodes~.
 
 ** Zerl
 
@@ -117,7 +115,6 @@ O projeto deve ter as seguintes características:
 + Inicialmente uma biblioteca interna do jogo, foi criada para traduzir de forma
   idiomática tipos em Zig \rightarrow Erlang (e vice versa).
 + Depois de várias iterações e redesigns acabou virando um pacote separado.
-+ Wrapper para a ~Erl_Interface~.
 
 ** Func Prog Sweden (2024)
 
@@ -170,10 +167,22 @@ mesmas entradas produz a mesma saída.
   cache remoto), o ~nix~ pode usá-la, o que significa que pode fornecer
   compilações incrementais.
 
-** Nix Store
+** Nixpkgs
+
+#+CAPTION: Fonte: [[https://repology.org/repositories/graphs][Repology]] 
+#+ATTR_LATEX: :width 0.8\linewidth
+[[./img/nix_repology.png]]
+
+
+** Nix Store (I)
 :PROPERTIES:
 :BEAMER_envargs: [allowframebreaks]
 :END:
+
+#+ATTR_BEAMER: :overlay +-
++ Armazenamento imutável: Todos os pacotes, configurações e dependências residem
+  na ~/nix/store~ de forma ~read-only~, com caminhos derivados a partir de um hash
+  criptográfico:
 
 #+begin_src 
 /nix/store/b6gvzjyb2pg(...)54ad73z-firefox-33.1
@@ -181,24 +190,38 @@ mesmas entradas produz a mesma saída.
   store             digest             name
 #+end_src
 
-** Nixpkgs
++ Cada caminho na ~/nix/store/~ inclui um hash computado a partir de toda a
+  derivação do pacote (todas as entradas: código-fonte, dependências,
+  configurações de compilação, ambiente, etc.), garantindo que até mesmo a menor
+  alteração produza uma nova entrada de armazenamento isolada.
 
-#+CAPTION: Fonte: [[https://repology.org/repositories/graphs][Repology]] 
+** Nix Store (II)
+:PROPERTIES:
+:BEAMER_envargs: [allowframebreaks]
+:END:
+
+#+ATTR_BEAMER: :overlay +-
++ Garbage collection: Pacotes antigos ou não utilizados permanecem até serem
+  explicitamente removidos com ~nix-collect-garbage~.
+
++ Sustenta o modelo funcional de gerenciamento de pacotes do Nix, permitindo
+  *compilações reproduzíveis*, *atualizações atômicas* e *rollbacks*.
+
+#+ATTR_LATEX: :width 0.4\linewidth
+[[./img/nix_store.png]]
+
+** Gerações (e rollbacks)
+
 #+ATTR_LATEX: :width 0.8\linewidth
-[[./img/nix_repology.png]]
+#+CAPTION: Fonte: [[https://nixos.org/guides/how-nix-works/][How NixOS works]] 
+[[./img/nix_generations.png]]
 
 ** NixOS
 
 + Distribuição GNU/Linux, completamente configurável e gerenciável via Nix
   (linguagem) e ~nix~ (gerenciador de pacotes).
 + /Infrastructure as code/ desde 2003.
-+ O estado e configuração do sistema é um /output/ da sua configuração, 
-
-** Gerações
-
-#+ATTR_LATEX: :width 0.8\linewidth
-#+CAPTION: Fonte: [[https://nixos.org/guides/how-nix-works/][How NixOS works]] 
-[[./img/nix_generations.png]]
++ O estado do sistema é uma saída de tudo que está sua configuração (em Nix).
 
 ** Nix não é Docker
 #+BEGIN_QUOTE
@@ -213,15 +236,15 @@ mesmas entradas produz a mesma saída.
 ** Nix Shells
 
 #+begin_src shell
-  › hello
+  $ hello
   hello: command not found
-  › nix shell nixpkgs#hello nixpkgs#cowsay
-  › hello
+  $ nix shell nixpkgs#hello nixpkgs#cowsay
+  $ hello
   Hello, world!
-  › cowsay "Hello, world!"
-   _______
-  < hello >
-   -------
+  $ cowsay "Hello, world!"
+   _______________
+  < Hello, world! >
+   ---------------
           \   ^__^
            \  (oo)\_______
               (__)\       )\/\
@@ -230,14 +253,21 @@ mesmas entradas produz a mesma saída.
 #+end_src
 #+CAPTION: Fonte:[[https://nixos-and-flakes.thiscute.world/development/intro#creating-a-custom-shell-environment-with-nix-shell][NixOS and Flakes book]] 
 
-** Nix Shells (e Devenv)
+** Devenv (I)
+
+Para desenvolvimento local, usamos Nix Shells e [[https://devenv.s/h][devenv.sh]].
 
 + Configuração declarativa, que também permite a _composição_ de ambientes diferentes.
-+ Configuração integrada para linguagens populares (Python, Rust, PHP,
-  JavaScript, etc).
-+ Módulos para serviçoes populares como PostgreSQL, Redis, MySQL, RabbitMQ, etc.
-+ Gerenciamento de processos, suporte para ~git~ hooks.
++ Módulos para serviços populares como PostgreSQL, Redis, MySQL, RabbitMQ, etc.
 + Acesso a todos pacotes do [[https://search.nixos.org/packages?channel=unstable&][nixpkgs]] (atualmente mais the 120K).
+
+#+ATTR_LATEX: :width 0.45\linewidth
+[[./img/nix_devenv.png]]
+
+** Devenv (II)
+
+#+ATTR_LATEX: :width 0.6\linewidth
+[[./img/nix_postgresql.png]]
 
 ** Devenv (Demo #1)
 
@@ -267,6 +297,31 @@ seguindo dos seguintes comandos (em shells diferentes):
 #+CAPTION: [cite: @beambook p.10 chapter.1 part.1.3.2]
 #+ATTR_LATEX: :width 0.7\linewidth
 [[./img/erlang_node.png]]
+
+** Processos em Erlang (Demo #2)
+
+*** Erlang Demo                                                     :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.6
+    :END:
+
+#+CAPTION: Adatapção de [cite: @cesarini2009erlang p.107 chap.4]
+#+ATTR_LATEX: :width \linewidth
+[[./img/erlang_demo.png]]
+
+*** Exemplo                                                         :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.4
+    :BEAMER_envargs: <2->
+    :END:
+
+    #+begin_src shell
+     $ ./benchmark.sh
+     Creating 1000000
+     processes took
+     1047 milliseconds
+    #+end_src
+
 
 ** Criando Processos com ~spawn/3~
 
@@ -349,14 +404,10 @@ seguindo dos seguintes comandos (em shells diferentes):
 OTP é um conjunto de frameworks, princípios e padrões que guiam e alicerçam a
 estrutura, design, implementação e deploys de sistemas baseados em Erlang. Usar
 OTP sem seus projetos vai te ajudar a evitar *complexidade acidental: coisas que
-são difíceis por que você escolheu ferramentas inaquadas*.
+são difíceis por que você escolheu ferramentas inadequadas*.
 
 [cite:@cesarini2016designing p.4]
 #+END_QUOTE
-
-** Let it Crash \rightarrow Let it Heal
-
-+ Por muito tempo o 
 
 ** OTP Applications
 
@@ -535,15 +586,15 @@ digraph gen_server {
 #+CAPTION: [cite:@cesarini2016designing p.58 chapter.3]
 #+RESULTS: fig:erlang-gen_server
 [[file:./img/erlang-gen_server.png]]
+
 ** ~gen_statem~
 
-#+ATTR_BEAMER: :overlay +-
-+ Gerenciamento de Estado Estruturado: Oferece uma interface para implementar
-  máquinas de estados finitos com estados e transições bem definidos.
-+ Processamento Orientado a Eventos: Lida com múltiplos tipos de eventos
-  (chamadas, conversões, mensagens informativas, timeouts) e os encaminha para
-  manipuladores de estado apropriados, com suporte para adiamento de eventos e
-  geração interna de eventos.
++ Oferece uma interface para implementar máquinas de estados finitos com estados
+  e transições bem definidos.
+
+#+CAPTION: Cada jogador no Lyceum é um processo com um ~gen_statem~.
+#+ATTR_LATEX: :width 0.5\linewidth
+[[./img/erlang_gen_statem.png]]
 
 ** Combinando as Estruturas (I)
 
@@ -972,15 +1023,32 @@ digraph ServerUmbrella {
 
 * PostgreSQL
 
-** Schemas (6NF)
+** Lógica no banco!
 
-** Omnigres
+#+CAPTION: Updatable View
+#+NAME: fig:sql-omnigres-du
+#+ATTR_LATEX: :width 0.8\linewidth
+[[./img/sql_updatable_views.png]]
 
-+ Trabalhamos junto com o mantenedor para empacotar o projeto no nixpkgs.
+** Omnigres (I)
+
++ Uma extensão para o PostgreSQL visa oferecer melhor qualidade de vida para o
+  desenvolvimento de aplicações, oferece baterias para lidar com tráfego
+  HTTP/WebSockets, roteamento e consultas reativas, etc.
++ Integrações avançadas: Inclui componentes como ~omni_httpd~ (servidor HTTP),
+  ~omni_session~ (sessões), ~omni_vfs~ (sistema de arquivos virtual), ~omni_types~
+  (Discriminated Unions), ~omni_ledger~, etc.
+
+** Omnigres (II)
+
+#+CAPTION: Como ter sum types em PostgreSQL
+#+NAME: fig:sql-omnigres-du
+#+ATTR_LATEX: :width 0.8\linewidth
+[[./img/sql_omnigres_du.png]]
 
 * Nix (Parte II)
 
-** Builds Puras (Demo #3)
+** Builds Puras
 
 #+begin_src shell
   # Server
@@ -990,7 +1058,7 @@ digraph ServerUmbrella {
   nix build .#client
 #+end_src
 
-** OCI Images (Demo #4)
+** OCI Images
 
 #+begin_src shell
   # OCI Image
@@ -1003,9 +1071,56 @@ digraph ServerUmbrella {
 
 ** Servidor NixOS Declarativo
 
-+ 
-  
-** NixOS (Demo #5)
+#+ATTR_BEAMER: :overlay +-
++ O deploy do jogo é feito num projeto separado, o [[https://github.com/Dr-Nekoma/trashcan][Trashcan]].
++ O provisionamento da infra inicial é feito com [[https://opentofu.org/][Open Tofu]].
++ Toda a configuração da máquina no EC2 é feita com Nix. O deploy da
+  configuração em Nix possui 2 fases:
+  * ~bootstrap~: Onde colocamos uma versão com o mínimo de pacotes possível,
+    apenas usuários iniciais a acesso via ssh.
+  * ~nekoma~: Configuração com todos os *módulos* habilitados.
+
+** Nix Modules (I)
+
+#+CAPTION: Exemplo de uma VM onde certos módulos são habilitados
+#+ATTR_LATEX: :width 0.45\linewidth
+[[./img/nixos_modules_i.png]]
+
+** Nix Modules (II)
+
+#+ATTR_LATEX: :width 0.5\linewidth
+[[./img/nixos_modules_ii.png]]
+
+** Particionamento declarativo com ~disko~
+
+*** ~disko~                                                           :BMCOL:B_block:
+    :PROPERTIES:
+    :BEAMER_col: 0.6
+    :BEAMER_env: block
+    :END:
+
+O projeto [[https://github.com/nix-community/disko][disko]] possibilita o particionamento e formatação de discos de forma
+*declarativa*.
+
+*** Exemplo                                                         :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.4
+    :BEAMER_envargs: <2->
+    :END:
+
+#+ATTR_LATEX: :width 0.75\linewidth
+[[./img/nixos_disko.png]]
+
+** Uma bomba atômica a cada reboot
+
++ O [[https://github.com/nix-community/impermanence][impermanence]] é outro módulo interessate da [[https://github.com/nix-community][nix-community]], que permite que
+  apenas as partições e diretórios descritas na configuração em Nix sejam
+  mantidas a cada reboot.
+
+#+ATTR_LATEX: :width 0.65\linewidth
+[[./img/nixos_impermanence.png]]
+
+** NixOS (Demo #3)
 
 #+TODO: Finish V2 deploy
 
@@ -1015,9 +1130,14 @@ digraph ServerUmbrella {
 :BEAMER_env: appendix
 :END:
 
-** Escada de Abstrações
+** Conclusão
 
-+ Composição
+#+ATTR_BEAMER: :overlay +-
++ Composição é uma propriedade fundamental para alavancar até mesmo as ideias
+  mais bizzaras.
++ Fundamentação teórica sólida tem um efeito multiplicador em termos de
+  produtividade.
++ Nix >>>>>>>> docker et al.
 
 ** Perguntas?
 
@@ -1027,13 +1147,15 @@ digraph ServerUmbrella {
 :END:
 - [[https://github.com/Dr-Nekoma/lyceum][Lyceum]]
 - [[https://github.com/dont-rely-on-nulls/zerl][Zerl]]
-- [[https://github.com/Dr-Nekoma/trashcan][Trashcan]]: Servidor NixOS
+- [[https://github.com/Dr-Nekoma/trashcan][Trashcan]]
 
 *** Slides
 :PROPERTIES:
 :BEAMER_ENV: block
 :END:
-- [[https://github.com/dont-rely-on-nulls/gambiconf-2025][Gambiconf 2025]]
+- [[https://github.com/dont-rely-on-nulls/gambiconf-2025][Gambiconf 2025]]: Uma "demo secreta", visto que todos os slides também foram
+  feitos num ambiente Nix com Emacs + Orgmode + LaTeX, contém inclusive uma
+  versão customizada do Emacs para buildar os slides em CI.
 
 ** Bibliografia
   :PROPERTIES:
