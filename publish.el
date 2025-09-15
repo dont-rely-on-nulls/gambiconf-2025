@@ -3,7 +3,12 @@
 ;;; Commentary:
 ;;;
 ;;; How to build this:
+;;;
 ;;;    make build
+;;;
+;;; or just:
+;;;
+;;;    make
 
 ;; Required packages
 (require 'citeproc)
