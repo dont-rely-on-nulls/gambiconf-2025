@@ -1,8 +1,12 @@
-#+STARTUP: inlineimages
-#+TITLE: Criando um MMO-RPG
+#+TITLE: Criando um "MMO-RPG"
 #+SUBTITLE: com Zig, Erlang, Nix e PostgreSQL
+
+:SETTINGS:
+#+STARTUP: inlineimages
+#+STARTUP: beamer
 #+AUTHOR: Marcos Benevides
 #+EMAIL: marcos.schonfinkel@gmail.com
+#+DATE: <2025-09-14 Sun> 
 #+DESCRIPTION: 
 #+KEYWORDS: 
 #+LANGUAGE:  pt
@@ -12,56 +16,306 @@
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
 #+HTML_LINK_UP:
-#+HTML_LINK_HOME:
+#+HTML_LINK_HOME: https://github.com/dont-rely-on-nulls/gambiconf-2025
 
-#+startup: beamer
+#+beamer_theme: SimplePlus
 #+LaTeX_CLASS: beamer
 #+LaTeX_CLASS_OPTIONS: [bigger]
-#+OPTIONS: H:2
-
+#+LATEX_HEADER: \input{./tex/template.tex}
+#+LATEX_HEADER: \usepackage[backend=bibtex]{biblatex}
+#+LATEX_HEADER: \addbibresource{./references.bib}
+#+LATEX_HEADER: \bibliographystyle{authordate1}
+#+bibliography: references
+:END:
 
 * Introdução
 
-** Nekoma e Recreative Programming
-+ Recreative programming (quickly explain what Nekoma is all about)
+** Programação Recreativa
 
-** The point where I joined the project.
+#+ATTR_BEAMER: :overlay +-
++ [[https://github.com/Dr-Nekoma][Dr. Nekoma]]: Projeto dedicado à programação recreativa e exploração de tópicos
+  nichados e sem influências mainstream. Comumente se materializa na forma de
+  projetos bizarros (praticidade questionável).
 
-+ There was already a lot of Zig, some Erlang code and postgresql as well.
-+ We needed a way to somehow make that environment suck less.
++ [[https://github.com/dont-rely-on-nulls][Dont Rely on Nulls]]: Uma iniciativa que se destina a empreendimentos mais
+  sérios. Por via de regra, projetos do "Dr. Nekoma" que se tornem sérios acabam
+  sendo migrados e aprimorados nessa organização (i.e. [[https://github.com/dont-rely-on-nulls/zerl][Zerl]]).
 
-* Nix Shells
+** Contexto
 
-+ Explain how Nix Shells made that happen and how we evolved the local dev
-  environment to be bizarrely productive. Explain why Nix is better than Docker.
+#+ATTR_BEAMER: :overlay +-
++ Este é um ambiente recreativo.
++ Temos toda a liberdade que não nos é permitida durante (a maioria) dos
+  empregos de tempo integral.
++ Quais são as coisas que sonhamos em ter?
++ Como podemos fazer isso acontecer?
 
-** O que é Nix?
+** Missão
 
-** Nixpkgs
+O projeto deve ter as seguintes características:
 
-** NixOS
+#+ATTR_BEAMER: :overlay +-
+1. Deve ser rápido (considerando que é um jogo), mas sem precisar recorrer ao Rust.
+2. Gráficos fáceis sem a dor de cabeça das APIs gráficas.
+3. Uma fonte única de verdade.
+4. Server distribuído e tolerante a falhas.
+5. Ambiente de desenvolvimento reproduzível, isolado e declarativo, que assume
+   apenas a existência de algum editor de texto e 0 pacotes instalados
+   globalmente. _Todos os componentes devem rodar localmente_.
 
-** Nix Shell
+** Resposta:
 
-** Nix não é Docker
-
-** Devenv
-
-** Escada de Abstrações
+#+ATTR_LATEX: :width 0.8\linewidth
+| Propriedade                             | Ferramenta            |
+|-----------------------------------------+-----------------------|
+| Deve ser rápido                         | [[https://ziglang.org/][Zig]]                   |
+| Gráficos fáceis                         | [[https://www.raylib.com/][Raylib]]                |
+| Uma fonte única de verdade              | [[https://www.postgresql.org/][PostgreSQL]] + [[https://omnigres.com/][Omnigres]] |
+| Server distribuído e tolerante a falhas | [[https://www.erlang.org/][Erlang/OTP]]            |
+| Ambiente de desenvolvimento             | Nix Shells e [[https://nixos.org/][NixOS]]    |
 
 * Zig
 
-** Erlang Interface
+** Zig \leftrightarrow Raylib
 
-** C Nodes
+#+ATTR_BEAMER: :overlay +-
++ [[https://ziglang.org/][Zig]]: Uma linguagem de programação focada em *desempenho*, *segurança* e *controle
+  explícito* sobre a memória, também fornece boa *interoperabilidade* com C.
 
-** Zerl is Born
++ [[https://www.raylib.com/][raylib]]: Uma biblioteca para criar aplicativos gráficos e jogos, que fornece
+  uma API simples para gráficos, entrada e áudio.
 
-** Func Prog Sweden 2024
+#+CAPTION: Lyceum, pre v0.1.0.
+#+NAME: fig:lyceum-pre-v0-1-0
+#+ATTR_LATEX: :width 0.5\linewidth
+[[./img/lyceum_pre_v_0_1_0.png]]
 
-- [[https://www.youtube.com/watch?v=ejYcWRERetM][Zerl: Making Zig in the BEAM an ez time]] by Eduardo Lemos.
+** Zig \harr C Nodes \leftrightarrow ~Erl_Interface~
+
+*** Interface com Erlang
+:PROPERTIES:
+:BEAMER_ENV: block
+:END:
+
+#+ATTR_BEAMER: :overlay +-
++ ~C Nodes~ são programas que atuam como nós ocultos dentro de um sistema Erlang
+  distribuído, permitindo que aplicações escritas em linguagens não suportadas
+  nativamente pela BEAM participem de clusters Erlang.
++ Utilizam a biblioteca ~Erl_Interface~ para se comunicar com outros nós via
+  TCP/IP, como se fossem nós Erlang nativos.
++ A ~Erl_Interface~ fornece funções para integrar programas em C com sistemas
+  Erlang, servindo como base para a criação de ~C Nodes~.
+
+** Zerl
+
+*** Estabelecendo a ponte entre Erlang e Zig
+:PROPERTIES:
+:BEAMER_ENV: block
+:END:
+
+#+ATTR_BEAMER: :overlay +-
++ Inicialmente uma biblioteca interna do jogo, foi criada para traduzir de forma
+  idiomática tipos em Zig \rightarrow Erlang (e vice versa).
++ Depois de várias iterações e redesigns acabou virando um pacote separado.
++ Wrapper para a ~Erl_Interface~.
+
+** Func Prog Sweden (2024)
+
+#+CAPTION: [[https://www.youtube.com/watch?v=ejYcWRERetM][Zerl: Making Zig in the BEAM an ez time]], Eduardo Lemos.
+#+NAME: fig:zerl-presentation
+[[./img/zerl_presentation.jpg]]
+
+* Nix (Parte I)
+
+** Como montar o ambiente de desenvolvimento?
+
++ Zig
++ Erlang
++ PostgreSQL (com extensões)
+
+** Como modelar dependências
+
+#+begin_src shell 
+  nix-store --query \
+    --graph $(readlink -f $(which python)) > python.dot
+  dot -Tps python.dot -o img/nix_python.png
+  rm python.dot
+#+end_src
+
+#+CAPTION: Todas as dependências necessárias para rodar o interpretador do Python 3.13 
+#+ATTR_LATEX: :width \linewidth
+[[./img/nix_python.png]]
+
+** O que é Nix?
+
+#+ATTR_LATEX: :width 0.7\linewidth
+[[./img/nix_the_declarative_trinity.png]]
+
+** Nix (Linguagem)
+
+Nix é uma linguagem de programação pura, funcional, /lazy/, declarativa e reproduzível.
+
+#+begin_quote
+Reprodutibilidade é um conceito de design de software, onde uma operação para as
+mesmas entradas produz a mesma saída.
+#+end_quote
+
+** Nix (Gerenciador de pacotes)
+
+#+ATTR_BEAMER: :overlay +-
++ ~nix~ é um gerenciador de pacotes puramente funcional.
++ Trata pacotes como *valores* em linguagens de programação puramente funcionais.
++ Sempre compila todo o /fecho transitivo/ (ou árvore de dependências) de um
+  pacote, porém, se uma dependência já estiver presente na ~/nix/store/~ (ou num
+  cache remoto), o ~nix~ pode usá-la, o que significa que pode fornecer
+  compilações incrementais.
+
+** Nix Store
+:PROPERTIES:
+:BEAMER_envargs: [allowframebreaks]
+:END:
+
+#+begin_src 
+/nix/store/b6gvzjyb2pg(...)54ad73z-firefox-33.1
+|---------||----------------------||-----------|
+  store             digest             name
+#+end_src
+
+** Nixpkgs
+
+#+CAPTION: Fonte: [[https://repology.org/repositories/graphs][Repology]] 
+#+ATTR_LATEX: :width 0.8\linewidth
+[[./img/nix_repology.png]]
+
+** NixOS
+
++ Distribuição GNU/Linux, completamente configurável e gerenciável via Nix
+  (linguagem) e ~nix~ (gerenciador de pacotes).
++ /Infrastructure as code/ desde 2003.
++ O estado e configuração do sistema é um /output/ da sua configuração, 
+
+** Gerações
+
+#+ATTR_LATEX: :width 0.8\linewidth
+#+CAPTION: Fonte: [[https://nixos.org/guides/how-nix-works/][How NixOS works]] 
+[[./img/nix_generations.png]]
+
+** Nix não é Docker
+#+BEGIN_QUOTE
+"Mas nós já temos o Docker..."
+#+END_QUOTE
+
++ Num ~Dockerfile~, você tem garantias de que um *mesmo comando* vai ser rodado na
+  *mesma ordem*, ou seja:
+  * Isso não significa que você vai ter o mesmo resultado *sempre*.
+  * *Repetibilidade* não é *reprodutibilidade*.
+
+** Nix Shells
+
+#+begin_src shell
+  › hello
+  hello: command not found
+  › nix shell nixpkgs#hello nixpkgs#cowsay
+  › hello
+  Hello, world!
+  › cowsay "Hello, world!"
+   _______
+  < hello >
+   -------
+          \   ^__^
+           \  (oo)\_______
+              (__)\       )\/\
+                  ||----w |
+                  ||     ||
+#+end_src
+#+CAPTION: Fonte:[[https://nixos-and-flakes.thiscute.world/development/intro#creating-a-custom-shell-environment-with-nix-shell][NixOS and Flakes book]] 
+
+** Nix Shells (e Devenv)
+
++ Configuração declarativa, que também permite a _composição_ de ambientes diferentes.
++ Configuração integrada para linguagens populares (Python, Rust, PHP,
+  JavaScript, etc).
++ Módulos para serviçoes populares como PostgreSQL, Redis, MySQL, RabbitMQ, etc.
++ Gerenciamento de processos, suporte para ~git~ hooks.
++ Acesso a todos pacotes do [[https://search.nixos.org/packages?channel=unstable&][nixpkgs]] (atualmente mais the 120K).
+
+** Devenv (Demo #1)
+
+#+begin_src shell
+  cd lyceum
+  nix develop --impure
+#+end_src
+
+ou, se você estiver usando [[https://github.com/direnv/direnv][direnv]] (com [[https://github.com/nix-community/nix-direnv][nix-direnv]])
+
+#+begin_src shell
+  cd lyceum
+#+end_src
+
+seguindo dos seguintes comandos (em shells diferentes):
+
+#+begin_src shell
+  devenv up
+  server
+  client-release
+#+end_src
 
 * Erlang
+
+** Erlang Node
+
+#+CAPTION: [cite: @beambook p.10 chapter.1 part.1.3.2]
+#+ATTR_LATEX: :width 0.7\linewidth
+[[./img/erlang_node.png]]
+
+** Criando Processos com ~spawn/3~
+
+#+ATTR_LATEX: :width 0.7\linewidth
+#+begin_src erlang
+  Pid2 = spawn(ModName, FuncName, [Arg1, ..., ArgN]).
+#+end_src
+
+#+NAME: erlang-process
+#+BEGIN_SRC dot :file ./img/erlang_process.png :cmdline -Kdot -Tpng :exports results
+  digraph Spawn {
+    node [shape=circle];
+    sep = 1;
+  
+    pid1 [label="Pid 1", fontsize="10pt", style=filled, fillcolor=grey];
+    pid2 [label="Pid 2", xlabel="Mod:Func(Args)", fontsize="10pt", style=filled, fillcolor=white];
+  
+    pid1 -> pid2 [label="  Spawn(Mod, Func, Args)", fontsize="10pt", minlen=1, style=dashed];
+  }
+#+END_SRC
+
+#+ATTR_LATEX: :width 0.8\linewidth
+#+CAPTION: [cite:@cesarini2016designing p.29 chapter.2]
+#+RESULTS: erlang-process
+[[file:./img/erlang_process.png]]
+
+** Message Passing
+
+#+ATTR_LATEX: :width 0.7\linewidth
+#+begin_src erlang
+  Pid2 ! { Pid1, hello }.
+#+end_src
+
+#+NAME: erlang-message-passing
+#+BEGIN_SRC dot :file ./img/erlang_message_passing.png :cmdline -Kdot -Tpng :exports results
+  digraph Send {
+    node [shape=circle];
+    rankdir="LR";
+
+    pid1 [label="Pid 1", xlabel="Pid2 ! { self(), hello }", fontsize="10pt", style=filled, fillcolor=grey];
+    pid2 [label="Pid 2", fontsize="10pt", style=filled, fillcolor=white, xlabel="receive (...) end." ];
+
+    pid1 -> pid2 [label="{ Pid1, hello }", fontsize="10pt", style=dashed];
+  }
+#+END_SRC
+
+#+ATTR_LATEX: :width 0.8\linewidth
+#+RESULTS: erlang-message-passing
+[[file:./img/erlang_message_passing.png]]
 
 ** Anatomia de um Processo
 
@@ -85,35 +339,29 @@
 #+END_SRC
 
 #+ATTR_LATEX: :width 0.5\linewidth
+#+CAPTION: [cite:@cesarini2016designing p.55 chapter.3]
 #+RESULTS: erlang-process-skeleton
 [[file:./img/erlang_process_skeleton.png]]
 
-** Let it Crash \rightarrow Let it Heal
-
-*** TODO Minor point about Erlang's Philosophy and how people misuderstand it
-
-** OTP (I)
-+ Open Telecom Platform
-
-*** TODO Minor points about history and why people at Ericsoon came up with OTP
-*** TODO Maybe reference this
+** OTP (Open Telecom Platform)
 
 #+BEGIN_QUOTE
-OTP is a domain-independent set of frameworks, principles, and patterns that
-guide and support the structure, design, implementation, and deployment of
-Erlang systems. Using OTP in your projects will help you avoid *accidental
-complexity: things that are difficult because you picked inadequate tools*.
+OTP é um conjunto de frameworks, princípios e padrões que guiam e alicerçam a
+estrutura, design, implementação e deploys de sistemas baseados em Erlang. Usar
+OTP sem seus projetos vai te ajudar a evitar *complexidade acidental: coisas que
+são difíceis por que você escolheu ferramentas inaquadas*.
 
-OTP is said to consist of three building blocks that, when used together,
-provide a solid approach to designing and developing systems in the problem
-domain we’ve just described. They are *Erlang* itself, *tools* and *libraries*, and a
-set of *design principles*. [cite:@cesarini2016designing p.4]
+[cite:@cesarini2016designing p.4]
 #+END_QUOTE
+
+** Let it Crash \rightarrow Let it Heal
+
++ Por muito tempo o 
 
 ** OTP Applications
 
-*** TODO A construct that can start/stop processes
-*** TODO Not really useful on his own, unless you combine with other OTP concepts
++ Uma ~Application~ é um constructor básico para deploy de projetos em Erlang/OTP.
++ São processos que ser iniciados, interrompidos e gerenciadas de forma independente.
 
 ** OTP Supervisors
 
@@ -210,20 +458,92 @@ sempre do mesmo modo e seu funcionao pode ser dividido em duas categorias:
 #+RESULTS: fig:erlang-supervisor-o4a
 [[file:./img/erlang_supervisor_o4a.png]]
 
-** ~gen_server~
+** ~gen_server~ (I)
 
-#+begin_quote
-Much of the work you think of as the core of a program - calculating results,
-storing information, and preparing replies - will fit neatly into the ~gen_server~
-behavior. It provides a core set of methods that let you set up a process,
-respond to requests, end the process gracefully, and even pass state to a new
-process if this one needs to be upgraded in place. [cite:@laurent2017 p.148]
-#+end_quote
++ Fornece uma interface para implementar processos que respondem a requisições
+  síncronas (~call~) e assíncronas (~cast~).
 
+#+NAME: fig:erlang-client-server
+#+BEGIN_SRC dot :file ./img/erlang-client-server.png :cmdline -Kneato -Tpng :exports results
+digraph client_server {
+    rankdir=LR;
+    node [shape=circle, label="", style=filled, fillcolor=white, width=0.8];
+    edge [fontsize=10, width=0.5];
+    
+    // Clients
+    client1 [xlabel="Client 1", pos="0,2!"];
+    client2 [xlabel="Client 2", pos="0,1!"];  
+    client3 [xlabel="Client 3", pos="0,0!"];
+    
+    // Server
+    server [xlabel="Server", pos="4,1!"];
+        
+    // Query/Reply arrows
+    client1 -> server [style=solid];
+    client2 -> server [style=solid];
+    client3 -> server [style=solid];
+     
+    server -> client1 [style=dashed];
+    server -> client2 [style=dashed];
+    server -> client3 [style=dashed];
+}
+#+END_SRC
+
+#+ATTR_LATEX: :width 0.7\linewidth
+#+RESULTS: fig:erlang-client-server
+[[file:./img/erlang-client-server.png]]
+
+** ~gen_server~ (II)
+
++ Gerenciamento de ciclo de vida padronizado: inicialização e outras transições
+  de estado são feitas de forma consistente.
++ Podem ser facilmente integrados em árvores de supervisão.
+
+#+NAME: fig:erlang-gen_server
+#+BEGIN_SRC dot :file ./img/erlang-gen_server.png :cmdline -Kdot -Tpng :exports results
+digraph gen_server {
+  rankdir=LR;
+  node [shape=box, style=filled];
+  edge [dir=both];
+  
+  graph [margin=0.2];
+  
+  api [label="API\n\nstart_link()\n(...)", 
+        fillcolor=lightblue, 
+        width=2, 
+        height=1.5,
+        fontsize=12];
+  
+  process [label="gen_server\nProcess", 
+            shape=circle, 
+            fillcolor=gray70,
+            width=1.2,
+            fontsize=11];
+  
+  callbacks [label="Callback Module\n\ninit/1\nhandle_call/3\nhandle_cast/2\nterminate/2", 
+              fillcolor=lightcyan,
+              width=2,
+              height=1.5,
+              fontsize=12];
+  
+  api -> process [arrowhead=normal, arrowtail=normal];
+  process -> callbacks [arrowhead=normal, arrowtail=normal];
+}
+#+END_SRC
+
+#+ATTR_LATEX: :width 0.7\linewidth
+#+CAPTION: [cite:@cesarini2016designing p.58 chapter.3]
+#+RESULTS: fig:erlang-gen_server
+[[file:./img/erlang-gen_server.png]]
 ** ~gen_statem~
 
-*** TODO Explain what this stands for
-*** TODO Show the player FSM
+#+ATTR_BEAMER: :overlay +-
++ Gerenciamento de Estado Estruturado: Oferece uma interface para implementar
+  máquinas de estados finitos com estados e transições bem definidos.
++ Processamento Orientado a Eventos: Lida com múltiplos tipos de eventos
+  (chamadas, conversões, mensagens informativas, timeouts) e os encaminha para
+  manipuladores de estado apropriados, com suporte para adiamento de eventos e
+  geração interna de eventos.
 
 ** Combinando as Estruturas (I)
 
@@ -312,8 +632,8 @@ graph g {
 
 ** Combinando as Estruturas (III)
 
-#+NAME: erlang-app-structure-iii
-#+BEGIN_SRC dot :file ./img/erlang_app_structure_iii.png :cmdline -Kdot -Tpng :exports results
+#+NAME: erlang-app-structure-iii-1
+#+BEGIN_SRC dot :file ./img/erlang_app_structure_iii_1.png :cmdline -Kdot -Tpng :exports results
 graph g {
   ratio=fill
   splines=spline
@@ -332,15 +652,53 @@ graph g {
   ]
   
   app [xlabel="Application", pos="1,1", fillcolor="red"]
-  sup [xlabel="Dynamic Supervisor", pos="1,1", fillcolor="blue"]
+  sup [xlabel="Dynamic Supervisor", pos="1,1", fillcolor="#90D5FF"]
 
   app -- sup
 }
 #+END_SRC
 
 #+ATTR_LATEX: :width 0.5\linewidth
-#+RESULTS: erlang-app-structure-iii
-[[file:./img/erlang_app_structure_iii.png]]
+#+RESULTS: erlang-app-structure-iii-1
+[[file:./img/erlang_app_structure_iii_1.png]]
+
+** Combinando as Estruturas (III)
+
+#+NAME: erlang-app-structure-iii-2
+#+BEGIN_SRC dot :file ./img/erlang_app_structure_iii_2.png :cmdline -Kdot -Tpng :exports results
+graph g {
+  ratio=fill
+  splines=spline
+  overlap=scale
+  
+  node [
+    label="", 
+    xlabel="",
+    shape=circle,
+    fixedsize=true,
+    width=0.3,
+    color="black",
+    fillcolor="white",
+    style="filled,solid",
+    fontsize=12
+  ]
+  
+  app [xlabel="Application", pos="1,1", fillcolor="red"]
+  sup [xlabel="Dynamic Supervisor", pos="1,1", fillcolor="#90D5FF"]
+  w1 [label="P1", pos="0,0"]
+  w2 [label="P2", pos="0,1"]
+  w3 [label="P3", pos="0,2"]
+  
+  app -- sup
+  sup -- w1
+  sup -- w2
+  sup -- w3
+}
+#+END_SRC
+
+#+ATTR_LATEX: :width 0.5\linewidth
+#+RESULTS: erlang-app-structure-iii-2
+[[file:./img/erlang_app_structure_iii_2.png]]
 
 ** Combinando as Estruturas (IV)
 
@@ -364,49 +722,322 @@ graph g {
   ]
   
   app [xlabel="Application", pos="1,1", fillcolor="red"]
-  sup [xlabel="Dynamic Supervisor", pos="1,1", fillcolor="blue"]
+  sup1 [xlabel="Dynamic Supervisor", pos="1,1", fillcolor="#90D5FF"]
+  sup2 [pos="1,2", fillcolor="blue"]
+  sup3 [pos="1,3", fillcolor="blue"]
+  sup4 [pos="1,4", fillcolor="#90D5FF"]
+  sup5 [pos="1,5", fillcolor="#90D5FF"]
+
   w1 [label="P1", pos="0,0"]
   w2 [label="P2", pos="0,1"]
   w3 [label="P3", pos="0,2"]
+
+  w4 [label="P4", pos="0,3"]
+  w5 [label="P5", pos="0,4"]
+
+  w6 [label="P6", pos="0,5"]
+  w7 [label="P7", pos="0,6"]
+
+  w8 [label="P8", pos="0,7"]
+  w9 [label="P9", pos="0,8"]
   
-  app -- sup
-  sup -- w1
-  sup -- w2
-  sup -- w3
+  app -- sup1
+  app -- sup2
+  app -- sup3
+  sup1 -- w1
+  sup1 -- w2
+  sup1 -- w3
+
+  sup2 -- w4
+  sup2 -- w5
+
+  sup3 -- sup4
+  sup3 -- sup5
+
+  sup4 -- w6
+  sup4 -- w7
+
+  sup5 -- w8
+  sup5 -- w9
+}
+#+END_SRC
+
+#+ATTR_LATEX: :width 0.8\linewidth
+#+RESULTS: erlang-app-structure-iv
+[[file:./img/erlang_app_structure_iv.png]]
+
+** Releases
+
++ Módulos: O nível mais baixo de encapsulamento.
++ ~Applications~: Um agrupamento módulos, estrutura de nível intermediário.
++ ~Releases~: Um agrupamento de uma ou mais aplicações.
+
+#+NAME: erlang-release
+#+BEGIN_SRC dot :file ./img/erlang_release.png :cmdline -Kdot -Tpng :exports results
+graph Release {
+  ratio=fill
+  splines=spline
+  overlap=scale
+  
+  subgraph cluster_release {
+    label="App v0.1.0"
+    
+    node [
+      label="", 
+      xlabel="",
+      shape=circle,
+      fixedsize=true,
+      width=0.3,
+      color="black",
+      fillcolor="white",
+      style="filled,solid",
+      fontsize=12
+    ]
+    
+    app [pos="1,1", fillcolor="red"]
+    sup1 [pos="1,1", fillcolor="#90D5FF"]
+    sup2 [pos="1,2", fillcolor="blue"]
+    sup3 [pos="1,3", fillcolor="blue"]
+    sup4 [pos="1,4", fillcolor="#90D5FF"]
+    sup5 [pos="1,5", fillcolor="#90D5FF"]
+
+    w1 [label="P1", pos="0,0"]
+    w2 [label="P2", pos="0,1"]
+    w3 [label="P3", pos="0,2"]
+
+    w4 [label="P4", pos="0,3"]
+    w5 [label="P5", pos="0,4"]
+
+    w6 [label="P6", pos="0,5"]
+    w7 [label="P7", pos="0,6"]
+
+    w8 [label="P8", pos="0,7"]
+    w9 [label="P9", pos="0,8"]
+    
+    app -- sup1
+    app -- sup2
+    app -- sup3
+    sup1 -- w1
+    sup1 -- w2
+    sup1 -- w3
+
+    sup2 -- w4
+    sup2 -- w5
+
+    sup3 -- sup4
+    sup3 -- sup5
+
+    sup4 -- w6
+    sup4 -- w7
+
+    sup5 -- w8
+    sup5 -- w9
+  }
 }
 #+END_SRC
 
 #+ATTR_LATEX: :width 0.5\linewidth
-#+RESULTS: erlang-app-structure-iv
-[[file:./img/erlang_app_structure_iv.png]]
-
-** OTP Releases
-
-+ 
+#+RESULTS: erlang-release
+[[file:./img/erlang_release.png]]
 
 ** Umbrellas
 
-+ 
+#+NAME: erlang-umbrella
+#+BEGIN_SRC dot :file ./img/erlang_umbrella.png :cmdline -Kdot -Tpng :exports results
+digraph ServerUmbrella {
+  rankdir=TB;
+  compound=true;
+  newrank=true;
+  splines=ortho;
+  
+  node [shape=box, style=filled, fontname="Arial", fontsize=10, fontcolor=white];
+  edge [fontname="Arial", fontsize=5, color="#374151"];
+  
+  // Umbrella Subgraph
+  subgraph cluster_server {
+    label="Server Umbrella";
+    style=filled;
+    fillcolor="#f8fafc";
+    color="#0f172a";
+    penwidth=4;
+    fontcolor="#0f172a";
+    fontsize=14;
+    
+    subgraph cluster_auth {
+      label="Auth";
+      style=filled;
+      fillcolor="#dbeafe";
+      color="#1e40af";
+      penwidth=3;
+      fontsize=12;
+      
+      AA [label="Auth Application", fillcolor="#1a365d"];
+      AS [label="Auth Supervisor", fillcolor="#b91c1c"];
+      SAW [label="Simple Auth Worker", fillcolor="#059669"];
+
+      AA -> AS;
+      AS -> SAW;
+    }
+    
+    subgraph cluster_world {
+      label="World";
+      style=filled;
+      fillcolor="#dcfce7";
+      color="#16a34a";
+      penwidth=3;
+      fontsize=12;
+      
+      WA [label="World Application", fillcolor="#1a365d"];
+      WS [label="World Supervisor", fillcolor="#b91c1c"];
+      WM [label="World Migrations", fillcolor="#059669"];
+      WM1 [label="Map 1", fillcolor="#059669"];
+
+      WA -> WS;
+      WS -> WM1;
+      WS -> WM;
+    }
+    
+    subgraph cluster_player {
+      label="Player";
+      style=filled;
+      fillcolor="#fed7aa";
+      color="#ea580c";
+      penwidth=3;
+      fontsize=12;
+      
+      PA [label="Player Application", fillcolor="#1a365d"];
+      TPLS [label="Top-Level Supervisor", fillcolor="#dc2626"];
+      DPS1 [label="Dynamic Supervisor", fillcolor="#aa3600"];
+      DPS2 [label="Dynamic Supervisor", fillcolor="#aa3600"];
+      DPS3 [label="Dynamic Supervisor", fillcolor="#aa3600"];
+      DPSN [label="Dynamic Supervisor", fillcolor="#aa3600"];
+
+      P1 [label="Player 1", fillcolor="#059669"];
+      P2 [label="Player 2", fillcolor="#059669"];
+      P3 [label="Player 3", fillcolor="#059669"];
+      PN [label="Player N", fillcolor="#059669"];
+
+      PA -> TPLS;
+  
+      TPLS -> DPS1;
+      DPS1 -> P1;
+
+      TPLS -> DPS2;
+      DPS2 -> P2;
+
+      TPLS -> DPS3;
+      DPS3 -> P3;
+
+      TPLS -> DPSN;
+      DPSN -> PN;
+    }
+    
+    subgraph cluster_cache {
+      label="Cache";
+      style=filled;
+      fillcolor="#f3e8ff";
+      color="#9333ea";
+      penwidth=3;
+      fontsize=12;
+      
+      CA [label="Cache Application", fillcolor="#1a365d"];
+      CS [label="Cache Supervisor", fillcolor="#b91c1c"];
+      CW [label="Cache Worker", fillcolor="#059669"];
+      MNESIA [label="MNESIA", shape=cylinder, fillcolor="#374151"];
+
+      CA -> CS;
+      CS -> CW;
+      CW -> MNESIA [dir=both];
+    }
+    
+    subgraph cluster_libraries {
+      label="Utility Libraries";
+      style=filled;
+      fillcolor="#f1f5f9";
+      color="#475569";
+      penwidth=3;
+      fontsize=12;
+      fontname="Arial Bold";
+      
+      LPG [label="PostgreSQL Library", fillcolor="#7c3aed", style="filled,dashed"];
+      LMAP [label="Map Library", fillcolor="#7c3aed", style="filled,dashed"];
+    }
+  }
+}
+#+END_SRC
+
+#+ATTR_LATEX: :width \linewidth
+#+RESULTS: erlang-umbrella
+[[file:./img/erlang_umbrella.png]]
 
 * PostgreSQL
 
+** Schemas (6NF)
+
 ** Omnigres
 
-+ 
++ Trabalhamos junto com o mantenedor para empacotar o projeto no nixpkgs.
 
-** Schemas
+* Nix (Parte II)
 
-+ 
+** Builds Puras (Demo #3)
 
-* The Deploy
+#+begin_src shell
+  # Server
+  nix build .#server
+
+  # Client
+  nix build .#client
+#+end_src
+
+** OCI Images (Demo #4)
+
+#+begin_src shell
+  # OCI Image
+  nix build .#dockerImage
+  docker load < ./result
+  docker container run --network=host lyceum:latest
+#+end_src
+
+* NixOS
 
 ** Servidor NixOS Declarativo
 
-+ Finish up showing how we composed everything together and even deployed a
-  NixOS server to run the game.
-+ Re-iterate about the value of recreative programming.
++ 
   
-** Demo
+** NixOS (Demo #5)
 
-+ Re-iterate about the value of recreative programming.
+#+TODO: Finish V2 deploy
 
+* Fim
+
+:PROPERTIES:
+:BEAMER_env: appendix
+:END:
+
+** Escada de Abstrações
+
++ Composição
+
+** Perguntas?
+
+*** Projetos
+:PROPERTIES:
+:BEAMER_ENV: block
+:END:
+- [[https://github.com/Dr-Nekoma/lyceum][Lyceum]]
+- [[https://github.com/dont-rely-on-nulls/zerl][Zerl]]
+- [[https://github.com/Dr-Nekoma/trashcan][Trashcan]]: Servidor NixOS
+
+*** Slides
+:PROPERTIES:
+:BEAMER_ENV: block
+:END:
+- [[https://github.com/dont-rely-on-nulls/gambiconf-2025][Gambiconf 2025]]
+
+** Bibliografia
+  :PROPERTIES:
+  :BEAMER_OPT: fragile,allowframebreaks,label=
+  :END:      
+
+#+print_bibliography:

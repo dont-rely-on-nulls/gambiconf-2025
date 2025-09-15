@@ -1,53 +1,71 @@
-;;; publish.el --- Build Beamer PDF from Org file
+;; package --- Summary
+;; publish.el --- Build the Beamer PDF from an org file
+;;; Commentary:
+;;;
+;;; How to build this:
+;;;    make build
 
-;; Load required packages
+;; Required packages
 (require 'citeproc)
 (require 'find-lisp)
 (require 'ox-beamer)
 (require 'ox-latex)
 (require 'seq)
 
-;; Functions
+;;; CODE:
+;; ===================
+;; UTIL FUNCTIONS
+;; ===================
 (defun patch-list-with-prefix (prefix strings)
   "Prepend PREFIX to every string in STRINGS."
   (mapcar (lambda (s) (concat prefix s)) strings))
 
-;; Paths
+;; ===================
+;; SETTINGS
+;; ===================
+;;; Paths
 (setq-default root-dir (concat (getenv "PWD") "/"))
+(setq-default tex-dir (concat root-dir "tex"))
 
-;; Configure LaTeX export settings
-(setq org-latex-to-pdf-process 
-  '("pdflatex --shell-escape -interaction nonstopmode -output-directory %o %f"
-    "pdflatex --shell-escape -interaction nonstopmode -output-directory %o %f"
-    "pdflatex --shell-escape -interaction nonstopmode -output-directory %o %f"))
+(message (format "SETTING ROOT DIR: %s" root-dir))
+(message (format "SETTING TEXT DIR: %s" tex-dir))
 
-;; Set up LaTeX compiler
+;;; Configure LaTeX export settings
+(setq org-latex-pdf-process (list
+   "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
+
+;;; Set up LaTeX compiler
 (setq org-latex-compiler "pdflatex")
+(setq org-latex-remove-logfiles t)
+(setq org-latex-logfiles-extensions '("aux" "bcf" "blg" "fdb_latexmk" "fls"
+	                                  "figlist" "idx" "log" "nav" "out" "ptc"
+	                                  "run.xml" "snm" "toc" "vrb" "xdv"))
 
-;; Enable verbose output for debugging
-(setq org-latex-logfiles-extensions 
-      '("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl"))
-
-;;;; Fix bibliography
-(setq-default bibtex-dir (concat root-dir "refs"))
-(setq org-cite-refs-list '("refs.bib"))
-(setq org-cite-refs-path (patch-list-with-prefix (concat bibtex-dir "/") org-cite-refs-list))
+;;; Setup bibliography with Bibtex
+(setq-default org-cite-refs-list '("references.bib"))
+(setq-default org-cite-refs-path (patch-list-with-prefix (concat root-dir "/") org-cite-refs-list))
 (setq org-cite-global-bibliography org-cite-refs-path)
 (setq org-cite-export-processors '((latex biblatex)
                                    (moderncv basic)
                                    (html csl)
                                    (t csl)))
 
-;; Ensure beamer class is available
-(unless (assoc "beamer" org-latex-classes)
-  (add-to-list 'org-latex-classes
-               '("beamer"
-                 "\\documentclass[presentation]{beamer}"
-                 ("\\section{%s}" . "\\section*{%s}")
-                 ("\\subsection{%s}" . "\\subsection*{%s}")
-                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
+;;; Babel settings
+(setq org-confirm-babel-evaluate nil)
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((awk . t)
+   (dot . t)
+   (emacs-lisp . t)
+   (eshell . t)
+   (latex . t)
+   (org . t)
+   (shell   . t)))
 
-;; Define the publishing project
+;; ===================
+;; MAIN
+;; ===================
+;;; Org-publish settings
 (setq org-publish-project-alist
       '(("beamer-presentation"
          :base-directory "./"
@@ -59,7 +77,6 @@
          :exclude-tags ("noexport")
          :auto-sitemap nil)))
 
-;; Function to publish the presentation
 (defun build-presentation ()
   "Build the beamer presentation to PDF."
   (interactive)
@@ -72,7 +89,6 @@
      (message "Error building presentation: %s" (error-message-string err))
      nil)))
 
-;; Alternative direct export function
 (defun build-presentation-direct ()
   "Build presentation directly from current org file."
   (interactive)
@@ -84,7 +100,7 @@
       (error
        (message "Direct export failed: %s" (error-message-string err))))))
 
-;; If running as script, build immediately
+;;; If running as script, build immediately
 (when noninteractive
   (build-presentation))
 

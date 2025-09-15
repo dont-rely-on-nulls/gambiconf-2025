@@ -28,6 +28,7 @@
       mkEnv = pkgs: pkgs.texlive.combine {
         inherit (pkgs.texlive)
           beamer
+          beamertheme-simpleplus
           collection-basic
           collection-fontsextra
           collection-fontsrecommended
@@ -106,6 +107,13 @@
           );
         in
         {
+          # nix develop .#benchmark
+          benchmark = pkgs.mkShell {
+            buildInputs = with pkgs; [ 
+              erlang
+            ];
+          };
+
           # To be run with:
           #   nix develop .#ci
           # Reduces the number of packages to the bare minimum needed for CI
