@@ -1,5 +1,5 @@
 #+TITLE: Criando um "MMO-RPG"
-#+SUBTITLE: com Zig, Erlang, Nix e PostgreSQL
+#+SUBTITLE: com Zig, Erlang, Nix e PostgreSQL (e Emacs)
 
 :SETTINGS:
 #+STARTUP: inlineimages
@@ -25,7 +25,7 @@
 #+LATEX_HEADER: \usepackage[backend=bibtex]{biblatex}
 #+LATEX_HEADER: \addbibresource{./references.bib}
 #+LATEX_HEADER: \bibliographystyle{authordate1}
-#+BEAMER_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{\secname} \end{frame}}
+#+BEAMER_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{\secname} \secbody \end{frame}}
 #+bibliography: references
 :END:
 
@@ -41,7 +41,7 @@
 + [[https://github.com/dont-rely-on-nulls][Dont Rely on Nulls]]: Uma iniciativa que se destina a empreendimentos mais
   sérios. Por via de regra, projetos do "Dr. Nekoma" que se tornem sérios acabam
   sendo migrados e aprimorados nessa organização (i.e. [[https://github.com/dont-rely-on-nulls/zerl][Zerl]]).
-
+  
 ** Contexto
 
 #+ATTR_BEAMER: :overlay +-
@@ -75,6 +75,7 @@ O projeto deve ter as seguintes características:
 | Server distribuído e tolerante a falhas | [[https://www.erlang.org/][Erlang/OTP]]            |
 | Ambiente de desenvolvimento             | Nix Shells e [[https://nixos.org/][NixOS]]    |
 
+
 * Zig
 
 ** Zig \leftrightarrow Raylib
@@ -86,10 +87,10 @@ O projeto deve ter as seguintes características:
 + [[https://www.raylib.com/][raylib]]: Uma biblioteca para criar aplicativos gráficos e jogos, que fornece
   uma API simples para gráficos, entrada e áudio.
 
-#+CAPTION: Lyceum, pre v0.1.0.
-#+NAME: fig:lyceum-pre-v0-1-0
-#+ATTR_LATEX: :width 0.5\linewidth
-[[./img/lyceum_pre_v_0_1_0.png]]
+    #+CAPTION: Lyceum, pré v0.1.0.
+    #+NAME: fig:lyceum-pre-v0-1-0
+    #+ATTR_LATEX: :width 0.5\linewidth
+    [[./img/lyceum_pre_v_0_1_0.png]]
 
 ** Zig \harr C Nodes \leftrightarrow ~Erl_Interface~
 
@@ -122,6 +123,7 @@ O projeto deve ter as seguintes características:
 #+CAPTION: [[https://www.youtube.com/watch?v=ejYcWRERetM][Zerl: Making Zig in the BEAM an ez time]], Eduardo Lemos.
 #+NAME: fig:zerl-presentation
 [[./img/zerl_presentation.jpg]]
+
 
 * Erlang
 
@@ -857,6 +859,7 @@ digraph ServerUmbrella {
 
 ** Arquitetura do Lyceum
 
+
 * PostgreSQL
 
 ** Lógica no banco!
@@ -1077,6 +1080,7 @@ seguindo dos seguintes comandos (em shells diferentes):
   docker container run --network=host lyceum:latest
 #+end_src
 
+
 * NixOS
 
 ** Servidor NixOS Declarativo
@@ -1149,17 +1153,18 @@ O projeto [[https://github.com/nix-community/disko][disko]] possibilita o partic
   mais bizzaras.
 + Fundamentação teórica sólida tem um efeito multiplicador em termos de
   produtividade.
+  * Programação declarativa é naturalmente composicional.
 + Nix >>>>>>>> docker et al.
 
-** Perguntas?
+** Recapitulação
 
 *** Projetos
 :PROPERTIES:
 :BEAMER_ENV: block
 :END:
-- [[https://github.com/Dr-Nekoma/lyceum][Lyceum]]
-- [[https://github.com/dont-rely-on-nulls/zerl][Zerl]]
-- [[https://github.com/Dr-Nekoma/trashcan][Trashcan]]
+- [[https://github.com/Dr-Nekoma/lyceum][Lyceum]]: O jogo criado para testar todo tipo de ideia maluca.
+- [[https://github.com/dont-rely-on-nulls/zerl][Zerl]]: Uma biblioteca que surgiu dentro do jogo e depois virou algo maior.
+- [[https://github.com/Dr-Nekoma/trashcan][Trashcan]]: O servidor declarativo.
 
 *** Slides
 :PROPERTIES:
@@ -1168,6 +1173,23 @@ O projeto [[https://github.com/nix-community/disko][disko]] possibilita o partic
 - [[https://github.com/dont-rely-on-nulls/gambiconf-2025][Gambiconf 2025]]: Uma "demo secreta", visto que todos os slides também foram
   feitos num ambiente Nix com Emacs + Orgmode + LaTeX, contém inclusive uma
   versão customizada do Emacs para buildar os slides em CI.
+
+
+** Perguntas?
+
+#+begin_quote
+*Declarative programming* is important because of two properties:
+
++ Declarative programs are *compositional*. A declarative program consists of
+  components that can each be written, tested, and proved correct independently
+  of other components and of its own past history (previous calls).
+
++ Reasoning about declarative programs is simple. (...) . Since declarative
+  programs compute only values, simple algebraic and logical reasoning
+  techniques can be used.
+
+[cite: @van2004concepts p.111 chapter.3]
+#+end_quote
 
 ** Bibliografia
   :PROPERTIES:
