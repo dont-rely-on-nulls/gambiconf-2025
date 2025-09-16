@@ -122,174 +122,6 @@ O projeto deve ter as seguintes características:
 #+NAME: fig:zerl-presentation
 [[./img/zerl_presentation.jpg]]
 
-* Nix (Parte I)
-
-** Como montar o ambiente de desenvolvimento?
-
-+ Zig
-+ Erlang
-+ PostgreSQL (com extensões)
-
-** Como modelar dependências
-
-#+begin_src shell 
-  nix-store --query \
-    --graph $(readlink -f $(which python)) > python.dot
-  dot -Tps python.dot -o img/nix_python.png
-  rm python.dot
-#+end_src
-
-#+CAPTION: Todas as dependências necessárias para rodar o interpretador do Python 3.13 
-#+ATTR_LATEX: :width \linewidth
-[[./img/nix_python.png]]
-
-** O que é Nix?
-
-#+ATTR_LATEX: :width 0.7\linewidth
-[[./img/nix_the_declarative_trinity.png]]
-
-** Nix (Linguagem)
-
-Nix é uma linguagem de programação pura, funcional, /lazy/, declarativa e reproduzível.
-
-#+begin_quote
-Reprodutibilidade é um conceito de design de software, onde uma operação para as
-mesmas entradas produz a mesma saída.
-#+end_quote
-
-** Nix (Gerenciador de pacotes)
-
-#+ATTR_BEAMER: :overlay +-
-+ ~nix~ é um gerenciador de pacotes puramente funcional.
-+ Trata pacotes como *valores* em linguagens de programação puramente funcionais.
-+ Sempre compila todo o /fecho transitivo/ (ou árvore de dependências) de um
-  pacote, porém, se uma dependência já estiver presente na ~/nix/store/~ (ou num
-  cache remoto), o ~nix~ pode usá-la, o que significa que pode fornecer
-  compilações incrementais.
-
-** Nixpkgs
-
-#+CAPTION: Fonte: [[https://repology.org/repositories/graphs][Repology]] 
-#+ATTR_LATEX: :width 0.8\linewidth
-[[./img/nix_repology.png]]
-
-
-** Nix Store (I)
-:PROPERTIES:
-:BEAMER_envargs: [allowframebreaks]
-:END:
-
-#+ATTR_BEAMER: :overlay +-
-+ Armazenamento imutável: Todos os pacotes, configurações e dependências residem
-  na ~/nix/store~ de forma ~read-only~, com caminhos derivados a partir de um hash
-  criptográfico:
-
-#+begin_src 
-/nix/store/b6gvzjyb2pg(...)54ad73z-firefox-33.1
-|---------||----------------------||-----------|
-  store             digest             name
-#+end_src
-
-+ Cada caminho na ~/nix/store/~ inclui um hash computado a partir de toda a
-  derivação do pacote (todas as entradas: código-fonte, dependências,
-  configurações de compilação, ambiente, etc.), garantindo que até mesmo a menor
-  alteração produza uma nova entrada de armazenamento isolada.
-
-** Nix Store (II)
-:PROPERTIES:
-:BEAMER_envargs: [allowframebreaks]
-:END:
-
-#+ATTR_BEAMER: :overlay +-
-+ Garbage collection: Pacotes antigos ou não utilizados permanecem até serem
-  explicitamente removidos com ~nix-collect-garbage~.
-
-+ Sustenta o modelo funcional de gerenciamento de pacotes do Nix, permitindo
-  *compilações reproduzíveis*, *atualizações atômicas* e *rollbacks*.
-
-#+ATTR_LATEX: :width 0.4\linewidth
-[[./img/nix_store.png]]
-
-** Gerações (e rollbacks)
-
-#+ATTR_LATEX: :width 0.8\linewidth
-#+CAPTION: Fonte: [[https://nixos.org/guides/how-nix-works/][How NixOS works]] 
-[[./img/nix_generations.png]]
-
-** NixOS
-
-+ Distribuição GNU/Linux, completamente configurável e gerenciável via Nix
-  (linguagem) e ~nix~ (gerenciador de pacotes).
-+ /Infrastructure as code/ desde 2003.
-+ O estado do sistema é uma saída de tudo que está sua configuração (em Nix).
-
-** Nix não é Docker
-#+BEGIN_QUOTE
-"Mas nós já temos o Docker..."
-#+END_QUOTE
-
-+ Num ~Dockerfile~, você tem garantias de que um *mesmo comando* vai ser rodado na
-  *mesma ordem*, ou seja:
-  * Isso não significa que você vai ter o mesmo resultado *sempre*.
-  * *Repetibilidade* não é *reprodutibilidade*.
-
-** Nix Shells
-
-#+begin_src shell
-  $ hello
-  hello: command not found
-  $ nix shell nixpkgs#hello nixpkgs#cowsay
-  $ hello
-  Hello, world!
-  $ cowsay "Hello, world!"
-   _______________
-  < Hello, world! >
-   ---------------
-          \   ^__^
-           \  (oo)\_______
-              (__)\       )\/\
-                  ||----w |
-                  ||     ||
-#+end_src
-#+CAPTION: Fonte:[[https://nixos-and-flakes.thiscute.world/development/intro#creating-a-custom-shell-environment-with-nix-shell][NixOS and Flakes book]] 
-
-** Devenv (I)
-
-Para desenvolvimento local, usamos Nix Shells e [[https://devenv.s/h][devenv.sh]].
-
-+ Configuração declarativa, que também permite a _composição_ de ambientes diferentes.
-+ Módulos para serviços populares como PostgreSQL, Redis, MySQL, RabbitMQ, etc.
-+ Acesso a todos pacotes do [[https://search.nixos.org/packages?channel=unstable&][nixpkgs]] (atualmente mais the 120K).
-
-#+ATTR_LATEX: :width 0.45\linewidth
-[[./img/nix_devenv.png]]
-
-** Devenv (II)
-
-#+ATTR_LATEX: :width 0.6\linewidth
-[[./img/nix_postgresql.png]]
-
-** Devenv (Demo #1)
-
-#+begin_src shell
-  cd lyceum
-  nix develop --impure
-#+end_src
-
-ou, se você estiver usando [[https://github.com/direnv/direnv][direnv]] (com [[https://github.com/nix-community/nix-direnv][nix-direnv]])
-
-#+begin_src shell
-  cd lyceum
-#+end_src
-
-seguindo dos seguintes comandos (em shells diferentes):
-
-#+begin_src shell
-  devenv up
-  server
-  client-release
-#+end_src
-
 * Erlang
 
 ** Erlang Node
@@ -298,7 +130,7 @@ seguindo dos seguintes comandos (em shells diferentes):
 #+ATTR_LATEX: :width 0.7\linewidth
 [[./img/erlang_node.png]]
 
-** Processos em Erlang (Demo #2)
+** Processos em Erlang (Demo #1)
 
 *** Erlang Demo                                                     :BMCOL:
     :PROPERTIES:
@@ -465,7 +297,7 @@ sempre do mesmo modo e seu funcionao pode ser dividido em duas categorias:
   }
 #+END_SRC
 
-#+ATTR_LATEX: :width 0.5\linewidth
+#+ATTR_LATEX: :width 0.4\linewidth
 #+RESULTS: fig:erlang-supervisor-o4o
 [[file:./img/erlang_supervisor_o4o.png]]
 
@@ -1046,19 +878,175 @@ digraph ServerUmbrella {
 #+ATTR_LATEX: :width 0.8\linewidth
 [[./img/sql_omnigres_du.png]]
 
-* Nix (Parte II)
+* Nix
 
-** Builds Puras
+** Como montar o ambiente de desenvolvimento?
 
-#+begin_src shell
-  # Server
-  nix build .#server
++ Zig
++ Erlang
++ PostgreSQL (com extensões)
 
-  # Client
-  nix build .#client
+** Como modelar dependências
+
+#+begin_src shell 
+  nix-store --query \
+    --graph $(readlink -f $(which python)) > python.dot
+  dot -Tps python.dot -o img/nix_python.png
+  rm python.dot
 #+end_src
 
-** OCI Images
+#+CAPTION: Todas as dependências necessárias para rodar o interpretador do Python 3.13 
+#+ATTR_LATEX: :width \linewidth
+[[./img/nix_python.png]]
+
+** O que é Nix?
+
+#+ATTR_LATEX: :width 0.7\linewidth
+[[./img/nix_the_declarative_trinity.png]]
+
+** Nix (Linguagem)
+
+Nix é uma linguagem de programação pura, funcional, /lazy/, declarativa e reproduzível.
+
+#+begin_quote
+Reprodutibilidade é um conceito de design de software, onde uma operação para as
+mesmas entradas produz a mesma saída.
+#+end_quote
+
+** Nix (Gerenciador de pacotes)
+
+#+ATTR_BEAMER: :overlay +-
++ ~nix~ é um gerenciador de pacotes puramente funcional.
++ Trata pacotes como *valores* em linguagens de programação puramente funcionais.
++ Sempre compila todo o /fecho transitivo/ (ou árvore de dependências) de um
+  pacote, porém, se uma dependência já estiver presente na ~/nix/store/~ (ou num
+  cache remoto), o ~nix~ pode usá-la, o que significa que pode fornecer
+  compilações incrementais.
+
+** Nixpkgs
+
+#+CAPTION: Fonte: [[https://repology.org/repositories/graphs][Repology]] 
+#+ATTR_LATEX: :width 0.8\linewidth
+[[./img/nix_repology.png]]
+
+
+** Nix Store (I)
+:PROPERTIES:
+:BEAMER_envargs: [allowframebreaks]
+:END:
+
+#+ATTR_BEAMER: :overlay +-
++ Armazenamento imutável: Todos os pacotes, configurações e dependências residem
+  na ~/nix/store~ de forma ~read-only~, com caminhos derivados a partir de um hash
+  criptográfico:
+
+#+begin_src 
+/nix/store/b6gvzjyb2pg(...)54ad73z-firefox-33.1
+|---------||----------------------||-----------|
+  store             digest             name
+#+end_src
+
++ Cada caminho na ~/nix/store/~ inclui um hash computado a partir de toda a
+  derivação do pacote (todas as entradas: código-fonte, dependências,
+  configurações de compilação, ambiente, etc.), garantindo que até mesmo a menor
+  alteração produza uma nova entrada de armazenamento isolada.
+
+** Nix Store (II)
+:PROPERTIES:
+:BEAMER_envargs: [allowframebreaks]
+:END:
+
+#+ATTR_BEAMER: :overlay +-
++ Garbage collection: Pacotes antigos ou não utilizados permanecem até serem
+  explicitamente removidos com ~nix-collect-garbage~.
+
++ Sustenta o modelo funcional de gerenciamento de pacotes do Nix, permitindo
+  *compilações reproduzíveis*, *atualizações atômicas* e *rollbacks*.
+
+#+ATTR_LATEX: :width 0.4\linewidth
+[[./img/nix_store.png]]
+
+** Gerações (e rollbacks)
+
+#+ATTR_LATEX: :width 0.8\linewidth
+#+CAPTION: Fonte: [[https://nixos.org/guides/how-nix-works/][How NixOS works]] 
+[[./img/nix_generations.png]]
+
+** NixOS
+
++ Distribuição GNU/Linux, completamente configurável e gerenciável via Nix
+  (linguagem) e ~nix~ (gerenciador de pacotes).
++ /Infrastructure as code/ desde 2003.
++ O estado do sistema é uma saída de tudo que está sua configuração (em Nix).
+
+** Nix não é Docker
+#+BEGIN_QUOTE
+"Mas nós já temos o Docker..."
+#+END_QUOTE
+
++ Num ~Dockerfile~, você tem garantias de que um *mesmo comando* vai ser rodado na
+  *mesma ordem*, ou seja:
+  * Isso não significa que você vai ter o mesmo resultado *sempre*.
+  * *Repetibilidade* não é *reprodutibilidade*.
+
+** Nix Shells
+
+#+begin_src shell
+  $ hello
+  hello: command not found
+  $ nix shell nixpkgs#hello nixpkgs#cowsay
+  $ hello
+  Hello, world!
+  $ cowsay "Hello, world!"
+   _______________
+  < Hello, world! >
+   ---------------
+          \   ^__^
+           \  (oo)\_______
+              (__)\       )\/\
+                  ||----w |
+                  ||     ||
+#+end_src
+#+CAPTION: Fonte:[[https://nixos-and-flakes.thiscute.world/development/intro#creating-a-custom-shell-environment-with-nix-shell][NixOS and Flakes book]] 
+
+** Devenv (I)
+
+Para desenvolvimento local, usamos Nix Shells e [[https://devenv.s/h][devenv.sh]].
+
++ Configuração declarativa, que também permite a _composição_ de ambientes diferentes.
++ Módulos para serviços populares como PostgreSQL, Redis, MySQL, RabbitMQ, etc.
++ Acesso a todos pacotes do [[https://search.nixos.org/packages?channel=unstable&][nixpkgs]] (atualmente mais the 120K).
+
+#+ATTR_LATEX: :width 0.45\linewidth
+[[./img/nix_devenv.png]]
+
+** Devenv (II)
+
+#+ATTR_LATEX: :width 0.6\linewidth
+[[./img/nix_postgresql.png]]
+
+** Devenv (Demo #1)
+
+#+begin_src shell
+  cd lyceum
+  nix develop --impure
+#+end_src
+
+ou, se você estiver usando [[https://github.com/direnv/direnv][direnv]] (com [[https://github.com/nix-community/nix-direnv][nix-direnv]])
+
+#+begin_src shell
+  cd lyceum
+#+end_src
+
+seguindo dos seguintes comandos (em shells diferentes):
+
+#+begin_src shell
+  devenv up
+  server
+  client-release
+#+end_src
+
+** OCI Images (Bonus)
 
 #+begin_src shell
   # OCI Image
