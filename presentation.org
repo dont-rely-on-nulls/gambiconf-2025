@@ -25,6 +25,7 @@
 #+LATEX_HEADER: \usepackage[backend=bibtex]{biblatex}
 #+LATEX_HEADER: \addbibresource{./references.bib}
 #+LATEX_HEADER: \bibliographystyle{authordate1}
+#+BEAMER_HEADER: \AtBeginSection[]{\begin{frame}<beamer>\frametitle{\secname} \end{frame}}
 #+bibliography: references
 :END:
 
@@ -184,6 +185,7 @@ O projeto deve ter as seguintes características:
 
 #+ATTR_LATEX: :width 0.7\linewidth
 #+begin_src erlang
+  % DST        MSG
   Pid2 ! { Pid1, hello }.
 #+end_src
 
@@ -853,6 +855,8 @@ digraph ServerUmbrella {
 #+RESULTS: erlang-umbrella
 [[file:./img/erlang_umbrella.png]]
 
+** Arquitetura do Lyceum
+
 * PostgreSQL
 
 ** Lógica no banco!
@@ -877,6 +881,7 @@ digraph ServerUmbrella {
 #+NAME: fig:sql-omnigres-du
 #+ATTR_LATEX: :width 0.8\linewidth
 [[./img/sql_omnigres_du.png]]
+
 
 * Nix
 
@@ -929,7 +934,6 @@ mesmas entradas produz a mesma saída.
 #+ATTR_LATEX: :width 0.8\linewidth
 [[./img/nix_repology.png]]
 
-
 ** Nix Store (I)
 :PROPERTIES:
 :BEAMER_envargs: [allowframebreaks]
@@ -963,8 +967,8 @@ mesmas entradas produz a mesma saída.
 + Sustenta o modelo funcional de gerenciamento de pacotes do Nix, permitindo
   *compilações reproduzíveis*, *atualizações atômicas* e *rollbacks*.
 
-#+ATTR_LATEX: :width 0.4\linewidth
-[[./img/nix_store.png]]
+    #+ATTR_LATEX: :width 0.4\linewidth
+    [[./img/nix_store.png]]
 
 ** Gerações (e rollbacks)
 
@@ -972,7 +976,10 @@ mesmas entradas produz a mesma saída.
 #+CAPTION: Fonte: [[https://nixos.org/guides/how-nix-works/][How NixOS works]] 
 [[./img/nix_generations.png]]
 
-** NixOS
+** NixOS = Linux + FP
+
+#+ATTR_LATEX: :width 0.8\linewidth
+[[./img/nixos_logo.png]]
 
 + Distribuição GNU/Linux, completamente configurável e gerenciável via Nix
   (linguagem) e ~nix~ (gerenciador de pacotes).
@@ -984,12 +991,13 @@ mesmas entradas produz a mesma saída.
 "Mas nós já temos o Docker..."
 #+END_QUOTE
 
+#+ATTR_BEAMER: :overlay +-
 + Num ~Dockerfile~, você tem garantias de que um *mesmo comando* vai ser rodado na
   *mesma ordem*, ou seja:
   * Isso não significa que você vai ter o mesmo resultado *sempre*.
   * *Repetibilidade* não é *reprodutibilidade*.
 
-** Nix Shells
+** Nix Shells (I)
 
 #+begin_src shell
   $ hello
@@ -1009,23 +1017,37 @@ mesmas entradas produz a mesma saída.
 #+end_src
 #+CAPTION: Fonte:[[https://nixos-and-flakes.thiscute.world/development/intro#creating-a-custom-shell-environment-with-nix-shell][NixOS and Flakes book]] 
 
+** Nix Shells (II)
+
+#+CAPTION: A primeira demo, com o benchmark em Erlang, rodou numa ~nix shell~.
+#+begin_src shell
+  #!/usr/bin/env nix
+  #! nix shell nixpkgs#erlang --command bash
+
+  erlc benchmark.erl
+  erl -noshell -s benchmark start 1000000 -s init stop
+#+end_src
+
 ** Devenv (I)
 
-Para desenvolvimento local, usamos Nix Shells e [[https://devenv.s/h][devenv.sh]].
+Para desenvolvimento local, usamos uma combinação de Nix Shells e [[https://devenv.s/h][devenv.sh]]. A
+escolha do ~devenv~ advém do fato dele melhorar a "developer experience" ao usar
+Nix e é um ótimo jeito de usuários não avançados experimentarem todas as coisas
+boas que Nix shells podem trazer.
 
-+ Configuração declarativa, que também permite a _composição_ de ambientes diferentes.
+#+ATTR_BEAMER: :overlay +-
 + Módulos para serviços populares como PostgreSQL, Redis, MySQL, RabbitMQ, etc.
 + Acesso a todos pacotes do [[https://search.nixos.org/packages?channel=unstable&][nixpkgs]] (atualmente mais the 120K).
 
-#+ATTR_LATEX: :width 0.45\linewidth
-[[./img/nix_devenv.png]]
+    #+ATTR_LATEX: :width 0.42\linewidth
+    [[./img/nix_devenv.png]]
 
 ** Devenv (II)
 
 #+ATTR_LATEX: :width 0.6\linewidth
 [[./img/nix_postgresql.png]]
 
-** Devenv (Demo #1)
+** Devenv (Demo #2)
 
 #+begin_src shell
   cd lyceum
@@ -1108,9 +1130,11 @@ O projeto [[https://github.com/nix-community/disko][disko]] possibilita o partic
 #+ATTR_LATEX: :width 0.65\linewidth
 [[./img/nixos_impermanence.png]]
 
+** Estado
 ** NixOS (Demo #3)
 
 #+TODO: Finish V2 deploy
+
 
 * Fim
 
