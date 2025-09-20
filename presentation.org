@@ -4,7 +4,7 @@
 :SETTINGS:
 #+STARTUP: inlineimages
 #+STARTUP: beamer
-#+AUTHOR: Marcos Benevides [[https://schonfinkel.github.io/][(schonfinkel.github.io]])
+#+AUTHOR: Marcos Benevides \href{https://github.com/schonfinkel}{\faGithub} \href{https://www.linkedin.com/in/schonfinkel/}{\faLinkedin}
 #+DATE: \today
 #+DESCRIPTION: 
 #+KEYWORDS: 
@@ -976,11 +976,11 @@ digraph ServerUmbrella {
 
 * PostgreSQL
 
-** Lógica no banco!
+** Updatable Views
 
-#+CAPTION: Updatable View
-#+NAME: fig:sql-omnigres-du
-#+ATTR_LATEX: :width 0.8\linewidth
+#+CAPTION: A ~character.view~ acaba operando como um módulo, sem expor detalhes de implemetação das tabelas originais.
+#+NAME: fig:sql-updatable-view
+#+ATTR_LATEX: :width 0.7\linewidth
 [[./img/sql_updatable_views.png]]
 
 ** Omnigres (I)

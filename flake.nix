@@ -35,6 +35,7 @@
               collection-mathscience
               enumitem
               fancyhdr
+              fontawesome
               graphics
               graphics-cfg
               graphviz
