@@ -47,7 +47,7 @@ jobs:
           nix build
 
       - name: Upload PDF
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: slide
           path: result/presentation.pdf
