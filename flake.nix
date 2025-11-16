@@ -13,12 +13,7 @@
 
   outputs = inputs@{ self, devenv, flake-parts, nixpkgs, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = [ 
-        "x86_64-linux"
-        "aarch64-linux"
-        "aarch64-darwin"
-        "x86_64-darwin"
-      ];
+      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
       perSystem = { pkgs, system, ... }: 
         let
           texenv = pkgs.texlive.combine {
@@ -49,7 +44,7 @@
           customEmacs = (pkgs.emacsPackagesFor pkgs.emacs-nox).emacsWithPackages (
             epkgs:
             (with epkgs.melpaPackages; 
-              [ citeproc htmlize ]
+              [ citeproc fontawesome htmlize ]
               ++ (with epkgs.elpaPackages; [ org ])
             )
           );
@@ -66,18 +61,33 @@
             default = pkgs.stdenvNoCC.mkDerivation rec {
               name = "presentation";
               src = ./.;
-              buildInputs = with pkgs; [ bash coreutils customEmacs gnumake texenv ];
+              buildInputs = with pkgs; [ 
+                bash 
+                coreutils 
+                customEmacs 
+                gnumake 
+                graphviz
+                texenv 
+              ];
               phases = ["unpackPhase" "buildPhase" "installPhase"];
               buildPhase = ''
                 export PATH="${pkgs.lib.makeBinPath buildInputs}:$PATH"
                 export XDG_CACHE_HOME="$(mktemp -d)"
                 export HOME="$(mktemp -d)"
                 export SOURCE_DATE_EPOCH="${toString self.lastModified}"
-                make build
+                
+                # Run the build
+                mkdir -p $out
+                PREFIX=$out make build || true
+                
+                printf "\n=== All files in build directory ===\n"
+                ls -la
               '';
               installPhase = ''
-                mkdir -p $out
-                cp presentation.pdf $out
+                mkdir -p "$out"
+                find . -name "*.pdf" -type f -exec cp -v {} "$out/" \;
+                printf "\n=== Successfully copied PDFs to output ===\n"
+                ls -la "$out/"
               '';
             };
           };
