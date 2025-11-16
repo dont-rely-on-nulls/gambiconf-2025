@@ -1,5 +1,7 @@
 .PHONY: build clean
 
+all: build
+
 build:
 	@echo "Building via org-publish..."
 	@mkdir -p public
