@@ -1107,7 +1107,7 @@ digraph Lyceum {
     penwidth=3;
     fontsize=12;
  
-    Z1 [label="Zerl", fillcolor="lightcoral"];
+    Z1 [label="Zerl", fillcolor="plum"];
     C1 [label="Client 1", fillcolor="ghostwhite"];
 
     Z1 -> C1;
@@ -1124,7 +1124,7 @@ digraph Lyceum {
     penwidth=3;
     fontsize=12;
 
-    Z2 [label="Zerl", fillcolor="lightcoral"];
+    Z2 [label="Zerl", fillcolor="plum"];
     C2 [label="Client 2", fillcolor="ghostwhite"];
 
     Z2 -> C2;
@@ -1141,7 +1141,7 @@ digraph Lyceum {
     penwidth=3;
     fontsize=12;
 
-    Z3 [label="Zerl", fillcolor="lightcoral"];
+    Z3 [label="Zerl", fillcolor="plum"];
     C3 [label="Client 3", fillcolor="ghostwhite"];
 
     Z3 -> C3;
@@ -1159,7 +1159,7 @@ digraph Lyceum {
     fontsize=12;
 
     subgraph player_2 {  
-      ZN [label="Zerl", fillcolor="lightcoral"];
+      ZN [label="Zerl", fillcolor="plum"];
       CN [label="Client N", fillcolor="ghostwhite"];
 
       ZN -> CN;
@@ -1605,7 +1605,7 @@ digraph Lyceum {
 :END:
 - [[https://github.com/Dr-Nekoma/lyceum][Lyceum]]: O jogo criado para testar todo tipo de ideia maluca.
 - [[https://github.com/dont-rely-on-nulls/zerl][Zerl]]: Uma biblioteca que surgiu dentro do jogo e depois virou algo maior.
-- [[https://github.com/Dr-Nekoma/trashcan][Trashcan]]: O servidor declarativo.
+- [[https://github.com/Dr-Nekoma/trashcan][Trashcan]]: O servidor NixOS declarativo.
 
 *** Slides
 :PROPERTIES:
