@@ -48,6 +48,7 @@ jobs:
 
       - name: Upload PDF
         uses: actions/upload-artifact@v5
+        if: github.event_name != 'pull_request'
         with:
           name: slide
           path: result/presentation.pdf
