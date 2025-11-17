@@ -127,10 +127,9 @@ O projeto deve ter as seguintes características:
 
 ** Erlang Node
 
-#+CAPTION: [cite: @beambook p.10 chapter.1 part.1.3.2]
+#+CAPTION: Representação esquemática de duas máquinas distintas, cada uma com nodes Erlang executando múltiplos aplicativos sobre a stack completa [cite: @areias2025 p.3 part.2]
 #+ATTR_LATEX: :width 0.6\linewidth
 [[./img/erlang_node.png]]
-
 
 + Uma ~Erlang Node~ é uma instância em execução do Erlang Runtime System (ERTS).
 + Processos em diferentes nós podem enviar e receber mensagens entre si.
@@ -771,7 +770,7 @@ graph g {
 ** Releases
 
 + Módulos: O nível mais baixo de encapsulamento.
-+ ~Applications~: Um agrupamento módulos, estrutura de nível intermediário.
++ ~Applications~: Um agrupamento de módulos, nível intermediário.
 + ~Releases~: Um agrupamento de uma ou mais aplicações.
 
 #+NAME: erlang-release
@@ -1185,6 +1184,13 @@ digraph Lyceum {
 #+ATTR_LATEX: :width 0.7\linewidth
 [[./img/sql_updatable_views.png]]
 
+** Constraints
+
+#+CAPTION: Garantindo que um equipamento está sendo usado da forma correta.
+#+NAME: fig:sql-checks
+#+ATTR_LATEX: :width 0.8\linewidth
+[[./img/sql_checks.png]]
+
 ** Omnigres (I)
 
 + Uma extensão para o PostgreSQL visa oferecer melhor qualidade de vida para o
@@ -1363,7 +1369,8 @@ boas que Nix shells podem trazer.
 
 ** Devenv (II)
 
-#+ATTR_LATEX: :width 0.6\linewidth
+#+CAPTION: Configuração declarativa do PostgreSQL (com extensões).
+#+ATTR_LATEX: :width 0.5\linewidth
 [[./img/nix_postgresql.png]]
 
 ** Devenv (Demo #2)
@@ -1402,7 +1409,7 @@ seguindo dos seguintes comandos (em shells diferentes):
 ** Servidor NixOS Declarativo
 
 #+ATTR_BEAMER: :overlay +-
-+ O deploy do jogo é feito num projeto separado, o [[https://github.com/Dr-Nekoma/trashcan][Trashcan]].
++ O deploy do jogo é feito num projeto separado, o [[https://github.com/dont-rely-on-nulls/chessboard][Chessboard]].
 + O provisionamento da infra inicial é feito com [[https://opentofu.org/][Open Tofu]] e é divido em duas etapas:
   * ~bootstrap~: Onde colocamos uma versão com o mínimo de pacotes possível,
     apenas usuários iniciais a acesso via ssh.
@@ -1444,7 +1451,6 @@ O projeto [[https://github.com/nix-community/disko][disko]] possibilita o partic
 
 ** Um ~rm -rf /~ em todo Reboot
 
-#+ATTR_BEAMER: :overlay +-
 + O [[https://github.com/nix-community/impermanence][impermanence]] é outro módulo interessate da [[https://github.com/nix-community][nix-community]], que permite que
   apenas as partições e diretórios descritas na configuração em Nix sejam
   mantidas a cada reboot.
@@ -1498,19 +1504,19 @@ digraph Lyceum {
     }
 
     subgraph cluster_devshell {
-      label="Devenv Shell";
+      label="Devenv";
       style=filled;
       fillcolor="#fed7aa";
       color="#ea580c";
       penwidth=3;
       fontsize=12;
       
-      DB [label="Nix Build", fillcolor="lightcoral"];
+      DB [label="Nix Shell", fillcolor="lightcoral"];
     }
   }
 
   subgraph cluster_infra {
-    label="Trashcan (Infra)";
+    label="Chessboard (Infra)";
     style=filled;
     fillcolor="lightgoldenrodyellow";
     color="gold";
@@ -1576,6 +1582,7 @@ digraph Lyceum {
 
 ** Mais PostgreSQL Declarativo
 
+#+CAPTION: Inicialização declarativa do PostgreSQL (usando ~systemd~).
 #+ATTR_LATEX: :width 0.8\linewidth
 [[./img/postgresql_nixos.png]]
 
@@ -1597,15 +1604,16 @@ digraph Lyceum {
   * Programação declarativa é naturalmente composicional.
 + Nix >>>>>>>> docker et al.
 
+
 ** Recapitulação
 
 *** Projetos
 :PROPERTIES:
 :BEAMER_ENV: block
 :END:
-- [[https://github.com/Dr-Nekoma/lyceum][Lyceum]]: O jogo criado para testar todo tipo de ideia maluca.
-- [[https://github.com/dont-rely-on-nulls/zerl][Zerl]]: Uma biblioteca que surgiu dentro do jogo e depois virou algo maior.
-- [[https://github.com/Dr-Nekoma/trashcan][Trashcan]]: O servidor NixOS declarativo.
+- [[https://github.com/Dr-Nekoma/lyceum][Lyceum]]: Um jogo criado para testar todo tipo de ideia maluca.
+- [[https://github.com/dont-rely-on-nulls/zerl][Zerl]]: Uma biblioteca que surgiu dentro do jogo e depois acabou virando algo maior.
+- [[https://github.com/dont-rely-on-nulls/chessboard][Chessboard]]: O servidor NixOS declarativo.
 
 *** Slides
 :PROPERTIES:
@@ -1614,6 +1622,12 @@ digraph Lyceum {
 - [[https://github.com/dont-rely-on-nulls/gambiconf-2025][Gambiconf 2025]]: Uma "demo secreta", visto que todos os slides também foram
   feitos num ambiente Nix com Emacs + Orgmode + LaTeX, contém inclusive uma
   versão customizada do Emacs para buildar os slides em CI.
+
+** Grupo de Estudos
+
+#+CAPTION: Grupo de estudos em Erlang/OTP.
+#+ATTR_LATEX: :width 0.5\linewidth
+[[./img/erlang_study_group.jpg]]
 
 ** Perguntas?
 
@@ -1630,6 +1644,7 @@ digraph Lyceum {
 
 [cite: @van2004concepts p.111 chapter.3]
 #+end_quote
+
 
 ** Bibliografia
   :PROPERTIES:
