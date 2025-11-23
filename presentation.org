@@ -37,11 +37,11 @@
     :BEAMER_col: 0.5
     :END:
 
-+ Programação Declarativa e Composição: Componentes que podem ser desenvolvidos
-  e verificados de forma independente.
++ Programação Declarativa
++ Composição
 + Boa fundamentação teórica \rightarrow Simplicidade.
 
-Adaptação de [cite: @van2004concepts p.111 chapter.3].
+Várias ideias podem ser encontradas em [cite: @van2004concepts p.111 chapter.3].
 
 *** Livro :BMCOL:
     :PROPERTIES:
@@ -249,8 +249,8 @@ O projeto deve ter as seguintes características:
     node [shape=circle];
     rankdir="LR";
 
-    pid1 [label="Pid 1", xlabel="Pid2 ! { hello, self() }", fontsize="10pt", style=filled, fillcolor=grey];
-    pid2 [label="Pid 2", fontsize="10pt", style=filled, fillcolor=grey, xlabel="receive (...) end." ];
+    pid1 [label="Pid 1\n<0.42.0>", xlabel="Pid2 ! { hello, self() }", fontsize="10pt", style=filled, fillcolor=grey];
+    pid2 [label="Pid 2\n<0.48.0>", fontsize="10pt", style=filled, fillcolor=grey, xlabel="receive (...) end." ];
 
     pid1 -> pid2 [label="{ hello, Pid1 }", fontsize="10pt", style=dashed];
   }
@@ -293,14 +293,37 @@ O projeto deve ter as seguintes características:
 #+ATTR_LATEX: :width 0.6\linewidth
 [[./img/erlang_otp.png]]
 
-** OTP Applications
+** OTP Applications (I)
 
-+ Uma ~Application~ é um constructor básico para deploy de projetos em Erlang/OTP.
++ Módulos: O nível mais baixo de encapsulamento.
++ Applications: Um agrupamento de módulos, nível intermediário.
+
+#+CAPTION: Exemplo de uma "Library Application".
+#+ATTR_LATEX: :width 0.8\linewidth
+[[file:./img/erlang_otp_app_01.png]]
+
+** OTP Applications (II)
+
++ Quando você implementa as funções ~start/2~ e ~stop/1~ (no behaviour ~application~),
+  o OTP agora é capaz de gerenciar o ciclo de vida de sua aplicação de *forma padronizada*.
++ Este processo agora pode inicar outros processos.
+
+#+CAPTION: Exemplo de uma "Application", que implementa ~start/2~ e ~stop/1~.
+#+ATTR_LATEX: :width 0.8\linewidth
+[[file:./img/erlang_otp_app_02.png]]
 
 ** OTP Supervisors
 
+#+begin_quote
+Uma árvore de supervisão é uma árvore de processos. Os processos superiores 
+(~supervisors~) na árvore monitoram os processos menores (~workers~) na hierarquia e
+os reiniciam em caso de falhas.
+
+[cite:@armstrong2013 p.398 chapter.23 part.23.5]
+#+end_quote
+
 #+NAME: fig:erlang-sup-callbacks
-#+BEGIN_SRC dot :file ./img/erlang-sup-callbacks.png :cmdline -Kdot -Tpng :exports results
+#+BEGIN_SRC dot :file ./img/erlang_sup_callbacks.png :cmdline -Kdot -Tpng :exports results
 digraph gen_server {
   rankdir=LR;
   node [shape=box, style=filled];
@@ -331,22 +354,10 @@ digraph gen_server {
 }
 #+END_SRC
 
-** OTP Supervisors
-
-#+begin_quote
-Uma árvore de supervisão é uma árvore de processos. Os processos superiores 
-(~supervisors~) na árvore monitoram os processos menores (~workers~) na hierarquia e
-os reiniciam em caso de falhas.
-
-[cite:@armstrong2013 p.398 chapter.23 part.23.5]
-#+end_quote
-
-Independentemente do que os processos monitados façam, um supervisor funciona
-sempre do mesmo modo e seu funcionao pode ser dividido em duas categorias:
-
-+ Uma parte genérica que lida com a criação, monitoramento e ~restart~ de
-  processos filhos.
-+ Uma especificação de como os processos filhos devem ser iniciados e reiniciados.
+#+ATTR_LATEX: :width 0.8\linewidth
+#+CAPTION: Adatapção de [cite:@cesarini2016designing p.175 chap.8]
+#+RESULTS: fig:erlang-sup-callbacks
+[[file:./img/erlang_sup_callbacks.png]]
 
 ** Estratégias de Supervisão (~one_for_one~)
 
@@ -584,7 +595,7 @@ digraph gen_server {
 #+END_SRC
 
 #+ATTR_LATEX: :width 0.7\linewidth
-#+CAPTION: [cite:@cesarini2016designing p.58 chapter.3]
+#+CAPTION: Adatapção de [cite:@cesarini2016designing p.58 chapter.3]
 #+RESULTS: fig:erlang-gen_server
 [[file:./img/erlang-gen_server.png]]
 
@@ -822,7 +833,7 @@ graph g {
 #+RESULTS: erlang-app-structure-iv
 [[file:./img/erlang_app_structure_iv.png]]
 
-** Empacotando
+** Recaptulando
 
 + Módulos: O nível mais baixo de encapsulamento.
 + ~Applications~: Um agrupamento de módulos, nível intermediário.
@@ -1423,7 +1434,8 @@ mesmas entradas produz a mesma saída.
 + Sustenta o modelo funcional de gerenciamento de pacotes do Nix, permitindo
   *compilações reproduzíveis*, *atualizações atômicas* e *rollbacks*.
 
-    #+ATTR_LATEX: :width 0.4\linewidth
+    #+CAPTION: Fonte [cite: @dolstra2004nix p.6].
+    #+ATTR_LATEX: :width 0.35\linewidth
     [[./img/nix_store.png]]
 
 ** Gerações (e rollbacks)
@@ -1486,12 +1498,8 @@ mesmas entradas produz a mesma saída.
 
 ** Devenv (I)
 
-Para desenvolvimento local, usamos uma combinação de Nix Shells e [[https://devenv.s/h][devenv.sh]]. A
-escolha do ~devenv~ advém do fato dele melhorar a "developer experience" ao usar
-Nix e é um ótimo jeito de usuários não avançados experimentarem todas as coisas
-boas que Nix shells podem trazer.
-
 #+ATTR_BEAMER: :overlay +-
++ Para desenvolvimento local, usamos uma combinação de Nix Shells e [[https://devenv.s/h][devenv.sh]]
 + Módulos para serviços populares como PostgreSQL, Redis, MySQL, RabbitMQ, etc.
 + Acesso a todos pacotes do [[https://search.nixos.org/packages?channel=unstable&][nixpkgs]] (atualmente mais the 120K).
 
@@ -1539,22 +1547,20 @@ seguindo dos seguintes comandos (em shells diferentes):
 
 ** Servidor NixOS Declarativo
 
-#+ATTR_BEAMER: :overlay +-
 + O deploy do jogo é feito num projeto separado, o [[https://github.com/dont-rely-on-nulls/chessboard][Chessboard]].
-+ O provisionamento da infra inicial é feito com [[https://opentofu.org/][Open Tofu]] e é divido em duas etapas:
-  * ~bootstrap~: Onde colocamos uma versão com o mínimo de pacotes possível,
-    apenas usuários iniciais a acesso via ssh.
-  * ~nekoma~: Configuração com todos os *módulos* habilitados.
++ O provisionamento da infra inicial é feito com [[https://opentofu.org/][Open Tofu]] e [[https://github.com/nix-community/nixos-anywhere/tree/main/terraform][nixos-anywhere]].
 + O processo pode ser replicado em 3 ambientes diferentes:
-  * AWS e Magalu Cloud. Usando os módulos para terraform do [[https://github.com/nix-community/nixos-anywhere/tree/main/terraform][nixos-anywhere]].
+  * AWS e Magalu Cloud.
   * Localmente, criando uma VM QEMU automaticamente com Nix.
+
+#+ATTR_LATEX: :width 0.8\linewidth
+[[./img/nixos_tofu.png]]
 
 ** Nix Modules (I)
 
 #+CAPTION: Exemplo de uma VM onde certos módulos são habilitados
 #+ATTR_LATEX: :width 0.45\linewidth
 [[./img/nixos_modules_i.png]]
-
 ** Nix Modules (II)
 
 #+ATTR_LATEX: :width 0.5\linewidth
@@ -1736,7 +1742,26 @@ digraph Lyceum {
 + Nix >>>>>>>> docker et al.
 
 
-** Recapitulação
+** Grupo de Estudos
+
+*** Grupo :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.5
+    :END:
+
+#+CAPTION: Grupo de estudos em Erlang/OTP.
+#+ATTR_LATEX: :width 0.8\linewidth
+[[./img/erlang_study_group.jpg]]
+
+*** Livro :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.5
+    :END:
+
+#+ATTR_LATEX: :width 0.8\linewidth
+[[./img/cesarini_book.jpg]]
+
+** Perguntas?
 
 *** Projetos
 :PROPERTIES:
@@ -1753,15 +1778,6 @@ digraph Lyceum {
 - [[https://github.com/dont-rely-on-nulls/gambiconf-2025][Gambiconf 2025]]: Uma "demo secreta", visto que todos os slides também foram
   feitos num ambiente Nix com Emacs + Orgmode + LaTeX, contém inclusive uma
   versão customizada do Emacs para buildar os slides em CI.
-
-** Grupo de Estudos
-
-#+CAPTION: Grupo de estudos em Erlang/OTP.
-#+ATTR_LATEX: :width 0.5\linewidth
-[[./img/erlang_study_group.jpg]]
-
-** Perguntas?
-
 
 
 ** Bibliografia
