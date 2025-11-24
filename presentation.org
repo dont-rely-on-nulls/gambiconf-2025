@@ -1321,10 +1321,14 @@ digraph Lyceum {
 
 ** Schemas + Views como Módulos
 
++ Os ~schemas~ do PostgreSQL são usados ​​como ~namespaces~.
++ Cada ~schema~ contém tabelas internas que não são acessadas diretamente.
++ O server em Erlang interage exclusivamente com as views.
+
 #+NAME: posgtresql-schemas
 #+BEGIN_SRC dot :file ./img/postgresql_schemas.png :cmdline -Kdot -Tpng :exports results
-digraph G {
-    graph [splines=true, rankdir=TD];
+digraph g {
+    graph [splines=true, rankdir=td];
 
     subgraph cluster_pg {
         label="lyceum"
@@ -1335,7 +1339,7 @@ digraph G {
             bgcolor="aquamarine"
 
             subgraph cluster_ct {
-                label="tables";
+                label="\ntables";
                 style=filled;
                 color=lightgray;
 
@@ -1359,7 +1363,7 @@ digraph G {
             bgcolor="aquamarine"
 
             subgraph cluster_mt {
-                label="tables";
+                label="\ntables";
                 style=filled;
                 color=lightgray;
 
@@ -1386,7 +1390,7 @@ digraph G {
 }
 #+END_SRC
 
-#+ATTR_LATEX: :width 0.7\linewidth
+#+ATTR_LATEX: :width \linewidth
 #+RESULTS: posgtresql-schemas
 [[file:./img/postgresql_schemas.png]]
 
