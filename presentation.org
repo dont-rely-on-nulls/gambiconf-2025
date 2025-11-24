@@ -1,11 +1,11 @@
 #+TITLE: Criando um "MMO-RPG"
 #+SUBTITLE: com Zig, Erlang, Nix e PostgreSQL (e Emacs)
+#+AUTHOR: Marcos Benevides \href{https://github.com/schonfinkel}{\faGithub} \href{https://www.linkedin.com/in/schonfinkel/}{\faLinkedin} \href{https://schonfinkel.github.io/}{\faGlobe}
+#+DATE: \today
 
 :SETTINGS:
 #+STARTUP: inlineimages
 #+STARTUP: beamer
-#+AUTHOR: Marcos Benevides \href{https://github.com/schonfinkel}{\faGithub} \href{https://www.linkedin.com/in/schonfinkel/}{\faLinkedin}
-#+DATE: \today
 #+DESCRIPTION: 
 #+KEYWORDS: 
 #+LANGUAGE:  pt
@@ -29,6 +29,27 @@
 :END:
 
 * Introdução
+
+** Objetivos
+
+*** Programação Declarativa :BMCOL:B_block:
+    :PROPERTIES:
+    :BEAMER_col: 0.5
+    :END:
+
++ Programação Declarativa
++ Composição
++ Boa fundamentação teórica \rightarrow Simplicidade.
+
+Várias ideias podem ser encontradas em [cite: @van2004concepts p.111 chapter.3].
+
+*** Livro :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.5
+    :END:
+
+    #+ATTR_LATEX: :width 0.7\linewidth
+    [[./img/ctm.jpg]]
 
 ** Programação Recreativa
 
@@ -90,7 +111,7 @@ O projeto deve ter as seguintes características:
     #+ATTR_LATEX: :width 0.65\linewidth
     [[./img/lyceum_pre_v_0_1_0.png]]
 
-** Zig \harr C Nodes \leftrightarrow ~Erl_Interface~
+** Zig \harr ~ei.h~ \leftrightarrow C Nodes
 
 *** Interface com Erlang
 :PROPERTIES:
@@ -101,7 +122,7 @@ O projeto deve ter as seguintes características:
 + ~C Nodes~ são programas que atuam como nós ocultos dentro de um sistema Erlang
   distribuído, permitindo que aplicações escritas em linguagens não suportadas
   nativamente pela BEAM participem de clusters Erlang.
-+ Utilizam a biblioteca ~Erl_Interface~ para se comunicar com outros nós via
++ Utilizam a biblioteca ~Erl_Interface~ (~ei.h~) para se comunicar com outros nós via
   TCP/IP, como se fossem nós Erlang nativos.
 
 ** Zerl
@@ -185,7 +206,14 @@ O projeto deve ter as seguintes características:
 #+RESULTS: erlang-process
 [[file:./img/erlang_process.png]]
 
-** Message Passing
+
+** Message Passing (I)
+
+#+CAPTION: Processo ~<0.42.0>~ enviando uma mensagem para a mailbox do processo ~<0.48.0>~. [cite:@hebert2013learn]
+#+ATTR_LATEX: :width 0.8\linewidth
+[[./img/erlang_message_passing_01.png]]
+
+** Message Passing (II)
 
 ***  :BMCOL:
     :PROPERTIES:
@@ -215,22 +243,22 @@ O projeto deve ter as seguintes características:
    :BEAMER_env: ignoreheading
    :END:
 
-#+NAME: erlang-message-passing
-#+BEGIN_SRC dot :file ./img/erlang_message_passing.png :cmdline -Kdot -Tpng :exports results
+#+NAME: erlang-message-passing-02
+#+BEGIN_SRC dot :file ./img/erlang_message_passing_02.png :cmdline -Kdot -Tpng :exports results
   digraph Send {
     node [shape=circle];
     rankdir="LR";
 
-    pid1 [label="Pid 1", xlabel="Pid2 ! { hello, self() }", fontsize="10pt", style=filled, fillcolor=grey];
-    pid2 [label="Pid 2", fontsize="10pt", style=filled, fillcolor=grey, xlabel="receive (...) end." ];
+    pid1 [label="Pid 1\n<0.42.0>", xlabel="Pid2 ! { hello, self() }", fontsize="10pt", style=filled, fillcolor=grey];
+    pid2 [label="Pid 2\n<0.48.0>", fontsize="10pt", style=filled, fillcolor=grey, xlabel="receive (...) end." ];
 
     pid1 -> pid2 [label="{ hello, Pid1 }", fontsize="10pt", style=dashed];
   }
 #+END_SRC
 
 #+ATTR_LATEX: :width 0.8\linewidth
-#+RESULTS: erlang-message-passing
-[[file:./img/erlang_message_passing.png]]
+#+RESULTS: erlang-message-passing-02
+[[file:./img/erlang_message_passing_02.png]]
 
 ** Anatomia de um Processo
 
@@ -258,23 +286,31 @@ O projeto deve ter as seguintes características:
 #+RESULTS: erlang-process-skeleton
 [[file:./img/erlang_process_skeleton.png]]
 
+
 ** OTP (Open Telecom Platform)
 
-#+BEGIN_QUOTE
-OTP é um conjunto de frameworks, princípios e padrões que guiam e alicerçam a
-estrutura, design, implementação e deploys de sistemas baseados em Erlang. Usar
-OTP sem seus projetos vai te ajudar a evitar *complexidade acidental: coisas que
-são difíceis por que você escolheu ferramentas inadequadas*.
+#+CAPTION: OTP fornece padrões e ferramentas que simplificam sua vida e evitam complexidade desnecessária causada por escolher ferramentas ruins. [cite:@cesarini2016designing p.4-5 chap.1].
+#+ATTR_LATEX: :width 0.6\linewidth
+[[./img/erlang_otp.png]]
 
-[cite:@cesarini2016designing p.4]
-#+END_QUOTE
+** OTP Applications (I)
 
-** OTP Applications
++ Módulos: O nível mais baixo de encapsulamento.
++ Applications: Um agrupamento de módulos, nível intermediário.
 
-+ Uma ~Application~ é um constructor básico para deploy de projetos em Erlang/OTP.
-+ Pode ser tanto uma biblioteca que é utilizada por outros processos
-  (i.e. ~Library Application~) ou um processo dotado da capacidade de ser
-  iniciado/interrompido (implementando uma interface com ~start~ / ~stop~).
+#+CAPTION: Exemplo de uma "Library Application".
+#+ATTR_LATEX: :width 0.8\linewidth
+[[file:./img/erlang_otp_app_01.png]]
+
+** OTP Applications (II)
+
++ Quando você implementa as funções ~start/2~ e ~stop/1~ (no behaviour ~application~),
+  o OTP agora é capaz de gerenciar o ciclo de vida de sua aplicação de *forma padronizada*.
++ Este processo agora pode inicar outros processos.
+
+#+CAPTION: Exemplo de uma "Application", que implementa ~start/2~ e ~stop/1~.
+#+ATTR_LATEX: :width 0.8\linewidth
+[[file:./img/erlang_otp_app_02.png]]
 
 ** OTP Supervisors
 
@@ -286,12 +322,42 @@ os reiniciam em caso de falhas.
 [cite:@armstrong2013 p.398 chapter.23 part.23.5]
 #+end_quote
 
-Independentemente do que os processos monitados façam, um supervisor funciona
-sempre do mesmo modo e seu funcionao pode ser dividido em duas categorias:
+#+NAME: fig:erlang-sup-callbacks
+#+BEGIN_SRC dot :file ./img/erlang_sup_callbacks.png :cmdline -Kdot -Tpng :exports results
+digraph gen_server {
+  rankdir=LR;
+  node [shape=box, style=filled];
+  edge [dir=both];
+  
+  graph [margin=0.2];
+  
+  api [label="API\n\nstart_link/0\n(...)", 
+        fillcolor=lightblue, 
+        width=2, 
+        height=1.5,
+        fontsize=12];
+  
+  process [label="supervisor\nProcess", 
+            shape=circle, 
+            fillcolor=gray70,
+            width=1.2,
+            fontsize=11];
+  
+  callbacks [label="Callback Module\n\ninit/1", 
+              fillcolor=lightcyan,
+              width=2,
+              height=1.5,
+              fontsize=12];
+  
+  api -> process [arrowhead=normal, arrowtail=normal];
+  process -> callbacks [arrowhead=normal, arrowtail=normal];
+}
+#+END_SRC
 
-+ Uma parte genérica que lida com a criação, monitoramento e ~restart~ de
-  processos filhos.
-+ Uma especificação de como os processos filhos devem ser iniciados e reiniciados.
+#+ATTR_LATEX: :width 0.8\linewidth
+#+CAPTION: Adaptação de [cite:@cesarini2016designing p.175 chap.8]
+#+RESULTS: fig:erlang-sup-callbacks
+[[file:./img/erlang_sup_callbacks.png]]
 
 ** Estratégias de Supervisão (~one_for_one~)
 
@@ -529,7 +595,7 @@ digraph gen_server {
 #+END_SRC
 
 #+ATTR_LATEX: :width 0.7\linewidth
-#+CAPTION: [cite:@cesarini2016designing p.58 chapter.3]
+#+CAPTION: Adaptação de [cite:@cesarini2016designing p.58 chapter.3]
 #+RESULTS: fig:erlang-gen_server
 [[file:./img/erlang-gen_server.png]]
 
@@ -767,21 +833,20 @@ graph g {
 #+RESULTS: erlang-app-structure-iv
 [[file:./img/erlang_app_structure_iv.png]]
 
-** Releases
+** Recaptulando
 
 + Módulos: O nível mais baixo de encapsulamento.
 + ~Applications~: Um agrupamento de módulos, nível intermediário.
-+ ~Releases~: Um agrupamento de uma ou mais aplicações.
 
-#+NAME: erlang-release
-#+BEGIN_SRC dot :file ./img/erlang_release.png :cmdline -Kdot -Tpng :exports results
+#+NAME: erlang-application-versioning
+#+BEGIN_SRC dot :file ./img/erlang_application_versioning.png :cmdline -Kdot -Tpng :exports results
 graph Release {
   ratio=fill
   splines=spline
   overlap=scale
-  
-  subgraph cluster_release {
-    label="App v0.1.0"
+
+  subgraph cluster_application {
+    label="App v1.2.3"
     
     node [
       label="", 
@@ -833,6 +898,83 @@ graph Release {
 
     sup5 -- w8
     sup5 -- w9
+  }
+}
+#+END_SRC
+
+#+ATTR_LATEX: :width 0.5\linewidth
+#+RESULTS: erlang-application-versioning
+[[file:./img/erlang_application_versioning.png]]
+
+** Releases
+
++ Módulos: O nível mais baixo de encapsulamento.
++ ~Applications~: Um agrupamento de módulos, nível intermediário.
++ ~Releases~: Um agrupamento de uma ou mais aplicações.
+
+#+NAME: erlang-release
+#+BEGIN_SRC dot :file ./img/erlang_release.png :cmdline -Kdot -Tpng :exports results
+graph Release {
+  ratio=fill
+  splines=spline
+  overlap=scale
+
+  subgraph cluster_rel {
+    label="Release v2.4.7"
+    subgraph cluster_application {
+      label="App v1.2.3"
+      
+      node [
+        label="", 
+        xlabel="",
+        shape=circle,
+        fixedsize=true,
+        width=0.3,
+        color="black",
+        fillcolor="ghostwhite",
+        style="filled,solid",
+        fontsize=12
+      ]
+      
+      app [pos="1,1", fillcolor="lightcoral"]
+      sup1 [pos="1,1", fillcolor="khaki"]
+      sup2 [pos="1,2", fillcolor="lightblue"]
+      sup3 [pos="1,3", fillcolor="lightblue"]
+      sup4 [pos="1,4", fillcolor="khaki"]
+      sup5 [pos="1,5", fillcolor="khaki"]
+
+      w1 [label="P1", pos="0,0"]
+      w2 [label="P2", pos="0,1"]
+      w3 [label="P3", pos="0,2"]
+
+      w4 [label="P4", pos="0,3"]
+      w5 [label="P5", pos="0,4"]
+
+      w6 [label="P6", pos="0,5"]
+      w7 [label="P7", pos="0,6"]
+
+      w8 [label="P8", pos="0,7"]
+      w9 [label="P9", pos="0,8"]
+      
+      app -- sup1
+      app -- sup2
+      app -- sup3
+      sup1 -- w1
+      sup1 -- w2
+      sup1 -- w3
+
+      sup2 -- w4
+      sup2 -- w5
+
+      sup3 -- sup4
+      sup3 -- sup5
+
+      sup4 -- w6
+      sup4 -- w7
+
+      sup5 -- w8
+      sup5 -- w9
+    }
   }
 }
 #+END_SRC
@@ -1177,6 +1319,81 @@ digraph Lyceum {
 
 * PostgreSQL
 
+** Schemas + Views como Módulos
+
++ Os ~schemas~ do PostgreSQL são usados ​​como ~namespaces~.
++ Cada ~schema~ contém tabelas internas que não são acessadas diretamente.
++ O server em Erlang interage exclusivamente com as views.
+
+#+NAME: posgtresql-schemas
+#+BEGIN_SRC dot :file ./img/postgresql_schemas.png :cmdline -Kdot -Tpng :exports results
+digraph g {
+    graph [splines=true, rankdir=td];
+
+    subgraph cluster_pg {
+        label="lyceum"
+        bgcolor="azure"
+
+        subgraph cluster_sc {
+            label="schema:character";
+            bgcolor="aquamarine"
+
+            subgraph cluster_ct {
+                label="\ntables";
+                style=filled;
+                color=lightgray;
+
+                c_instance [label="instance"; shape=box];
+                c_stats [label="stats"; shape=box];
+                c_position [label="position"; shape=box];
+                c_active [label="active"; shape=box];
+                c_item [label="item"; shape=box];
+                c_inventory [label="inventory"; shape=box];
+            }
+
+            character_view [label="character.view", shape=square, style=filled, fillcolor=lightblue];
+            character_view -> c_instance;
+            character_view -> c_stats;
+            character_view -> c_position;
+        }
+
+
+        subgraph cluster_sm {
+            label="schema:map";
+            bgcolor="aquamarine"
+
+            subgraph cluster_mt {
+                label="\ntables";
+                style=filled;
+                color=lightgray;
+
+                m_instance [label="instance"; shape=box];
+                m_tile [label="tile"; shape=box];
+                m_object [label="object"; shape=box];
+                m_object_is_resource [label="object_is_resource"; shape=box];
+                m_resource [label="resource"; shape=box];
+            }
+
+            map_resource_item_view [label="map.resource_item_view", shape=square, style=filled, fillcolor=lightblue];
+            map_resource_view [label="map.resource_view", shape=square, style=filled, fillcolor=lightblue];
+
+            map_resource_item_view -> c_item;
+            map_resource_item_view -> c_inventory;
+            map_resource_item_view -> c_instance;
+            map_resource_item_view -> m_object_is_resource;
+
+            map_resource_view -> m_object;
+            map_resource_view -> m_object_is_resource;
+            map_resource_view -> m_resource;
+        }
+    }
+}
+#+END_SRC
+
+#+ATTR_LATEX: :width \linewidth
+#+RESULTS: posgtresql-schemas
+[[file:./img/postgresql_schemas.png]]
+
 ** Updatable Views
 
 #+CAPTION: A ~character.view~ acaba operando como um módulo, sem expor detalhes de implemetação das tabelas originais.
@@ -1193,12 +1410,10 @@ digraph Lyceum {
 
 ** Omnigres (I)
 
-+ Uma extensão para o PostgreSQL visa oferecer melhor qualidade de vida para o
-  desenvolvimento de aplicações, oferece baterias para lidar com tráfego
-  HTTP/WebSockets, roteamento e consultas reativas, etc.
-+ Integrações avançadas: Inclui componentes como ~omni_httpd~ (servidor HTTP),
-  ~omni_session~ (sessões), ~omni_vfs~ (sistema de arquivos virtual), ~omni_types~
-  (Discriminated Unions), ~omni_ledger~, etc.
++ Omnigres é uma extensão do PostgreSQL que adiciona suporte integrado a
+  HTTP/WebSockets, roteamento e consultas reativas.
++ Inclui módulos avançados como ~omni_httpd~, ~omni_session~, ~omni_vfs~, ~omni_types~,
+  ~omni_ledger~, entre outros.
 
 ** Omnigres (II)
 
@@ -1292,7 +1507,8 @@ mesmas entradas produz a mesma saída.
 + Sustenta o modelo funcional de gerenciamento de pacotes do Nix, permitindo
   *compilações reproduzíveis*, *atualizações atômicas* e *rollbacks*.
 
-    #+ATTR_LATEX: :width 0.4\linewidth
+    #+CAPTION: Fonte [cite: @dolstra2004nix p.6].
+    #+ATTR_LATEX: :width 0.35\linewidth
     [[./img/nix_store.png]]
 
 ** Gerações (e rollbacks)
@@ -1355,12 +1571,8 @@ mesmas entradas produz a mesma saída.
 
 ** Devenv (I)
 
-Para desenvolvimento local, usamos uma combinação de Nix Shells e [[https://devenv.s/h][devenv.sh]]. A
-escolha do ~devenv~ advém do fato dele melhorar a "developer experience" ao usar
-Nix e é um ótimo jeito de usuários não avançados experimentarem todas as coisas
-boas que Nix shells podem trazer.
-
 #+ATTR_BEAMER: :overlay +-
++ Para desenvolvimento local, usamos uma combinação de Nix Shells e [[https://devenv.s/h][devenv.sh]]
 + Módulos para serviços populares como PostgreSQL, Redis, MySQL, RabbitMQ, etc.
 + Acesso a todos pacotes do [[https://search.nixos.org/packages?channel=unstable&][nixpkgs]] (atualmente mais the 120K).
 
@@ -1408,23 +1620,66 @@ seguindo dos seguintes comandos (em shells diferentes):
 
 ** Servidor NixOS Declarativo
 
-#+ATTR_BEAMER: :overlay +-
 + O deploy do jogo é feito num projeto separado, o [[https://github.com/dont-rely-on-nulls/chessboard][Chessboard]].
-+ O provisionamento da infra inicial é feito com [[https://opentofu.org/][Open Tofu]] e é divido em duas etapas:
-  * ~bootstrap~: Onde colocamos uma versão com o mínimo de pacotes possível,
-    apenas usuários iniciais a acesso via ssh.
-  * ~nekoma~: Configuração com todos os *módulos* habilitados.
++ O provisionamento da infra inicial é feito com [[https://opentofu.org/][Open Tofu]] e [[https://github.com/nix-community/nixos-anywhere/tree/main/terraform][nixos-anywhere]].
 + O processo pode ser replicado em 3 ambientes diferentes:
-  * AWS e Magalu Cloud. Usando os módulos para terraform do [[https://github.com/nix-community/nixos-anywhere/tree/main/terraform][nixos-anywhere]].
+  * AWS e Magalu Cloud.
   * Localmente, criando uma VM QEMU automaticamente com Nix.
 
-** Nix Modules (I)
+#+NAME: nixos-tofu
+#+BEGIN_SRC dot :file ./img/nixos_tofu.png :cmdline -Kdot -Tpng :exports results
+digraph OpenTofu {
+    rankdir=LR;
+    fontsize=20;
+
+
+    subgraph cluster_tofu {
+        label="Open Tofu";
+        labelloc="t";
+        bgcolor="cornsilk"
+
+        subgraph cluster_stage1 {
+            label="Stage 1: Bootstrap";
+            bgcolor="aquamarine";
+
+            vm [label="VM + Networking\nprovisioning", shape=box, style=filled, fillcolor="azure"];
+            nixos_anywhere [label="NixOS Anywhere\n(Terraform Modules)", shape=box, style=filled, fillcolor="azure"];
+            initial [label="Initial NixOS\n(minimal system)", shape=box, style=filled, fillcolor="azure"];
+
+            vm -> nixos_anywhere -> initial;
+        }
+
+        subgraph cluster_stage2 {
+            label="Stage 2: Full Configuration";
+            bgcolor="aquamarine";
+
+            initial_mods [label="Initial Modules", shape=box, style=filled, fillcolor="azure"];
+            postgres [label="PostgreSQL", shape=box, style=filled, fillcolor="azure"];
+            pgbouncer [label="pgbouncer", shape=box, style=filled, fillcolor="azure"];
+            secrets [label="Secrets Management", shape=box, style=filled, fillcolor="azure"];
+            lyceum [label="Lyceum", shape=box, style=filled, fillcolor="azure"];
+        }
+
+        initial -> initial_mods;
+        initial -> postgres;
+        initial -> pgbouncer;
+        initial -> secrets;
+        initial -> lyceum;
+    }
+
+}
+#+END_SRC
+
+#+ATTR_LATEX: :width 0.8\linewidth
+#+RESULTS: nixos-tofu
+[[file:./img/nixos_tofu.png]]
+
+** NixOS Modules (I)
 
 #+CAPTION: Exemplo de uma VM onde certos módulos são habilitados
 #+ATTR_LATEX: :width 0.45\linewidth
 [[./img/nixos_modules_i.png]]
-
-** Nix Modules (II)
+** NixOS Modules (II)
 
 #+ATTR_LATEX: :width 0.5\linewidth
 [[./img/nixos_modules_ii.png]]
@@ -1605,7 +1860,26 @@ digraph Lyceum {
 + Nix >>>>>>>> docker et al.
 
 
-** Recapitulação
+** Grupo de Estudos
+
+*** Grupo :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.5
+    :END:
+
+#+CAPTION: Grupo de estudos em Erlang/OTP.
+#+ATTR_LATEX: :width 0.8\linewidth
+[[./img/erlang_study_group.jpg]]
+
+*** Livro :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.5
+    :END:
+
+#+ATTR_LATEX: :width 0.8\linewidth
+[[./img/cesarini_book.jpg]]
+
+** Perguntas?
 
 *** Projetos
 :PROPERTIES:
@@ -1622,28 +1896,6 @@ digraph Lyceum {
 - [[https://github.com/dont-rely-on-nulls/gambiconf-2025][Gambiconf 2025]]: Uma "demo secreta", visto que todos os slides também foram
   feitos num ambiente Nix com Emacs + Orgmode + LaTeX, contém inclusive uma
   versão customizada do Emacs para buildar os slides em CI.
-
-** Grupo de Estudos
-
-#+CAPTION: Grupo de estudos em Erlang/OTP.
-#+ATTR_LATEX: :width 0.5\linewidth
-[[./img/erlang_study_group.jpg]]
-
-** Perguntas?
-
-#+begin_quote
-*Declarative programming* is important because of two properties:
-
-+ Declarative programs are *compositional*. A declarative program consists of
-  components that can each be written, tested, and proved correct independently
-  of other components and of its own past history (previous calls).
-
-+ Reasoning about declarative programs is simple. (...) . Since declarative
-  programs compute only values, simple algebraic and logical reasoning
-  techniques can be used.
-
-[cite: @van2004concepts p.111 chapter.3]
-#+end_quote
 
 
 ** Bibliografia
