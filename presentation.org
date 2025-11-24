@@ -355,7 +355,7 @@ digraph gen_server {
 #+END_SRC
 
 #+ATTR_LATEX: :width 0.8\linewidth
-#+CAPTION: Adatapção de [cite:@cesarini2016designing p.175 chap.8]
+#+CAPTION: Adaptação de [cite:@cesarini2016designing p.175 chap.8]
 #+RESULTS: fig:erlang-sup-callbacks
 [[file:./img/erlang_sup_callbacks.png]]
 
@@ -595,7 +595,7 @@ digraph gen_server {
 #+END_SRC
 
 #+ATTR_LATEX: :width 0.7\linewidth
-#+CAPTION: Adatapção de [cite:@cesarini2016designing p.58 chapter.3]
+#+CAPTION: Adaptação de [cite:@cesarini2016designing p.58 chapter.3]
 #+RESULTS: fig:erlang-gen_server
 [[file:./img/erlang-gen_server.png]]
 
@@ -1319,6 +1319,77 @@ digraph Lyceum {
 
 * PostgreSQL
 
+** Schemas + Views como Módulos
+
+#+NAME: posgtresql-schemas
+#+BEGIN_SRC dot :file ./img/postgresql_schemas.png :cmdline -Kdot -Tpng :exports results
+digraph G {
+    graph [splines=true, rankdir=TD];
+
+    subgraph cluster_pg {
+        label="lyceum"
+        bgcolor="azure"
+
+        subgraph cluster_sc {
+            label="schema:character";
+            bgcolor="aquamarine"
+
+            subgraph cluster_ct {
+                label="tables";
+                style=filled;
+                color=lightgray;
+
+                c_instance [label="instance"; shape=box];
+                c_stats [label="stats"; shape=box];
+                c_position [label="position"; shape=box];
+                c_active [label="active"; shape=box];
+                c_item [label="item"; shape=box];
+                c_inventory [label="inventory"; shape=box];
+            }
+
+            character_view [label="character.view", shape=square, style=filled, fillcolor=lightblue];
+            character_view -> c_instance;
+            character_view -> c_stats;
+            character_view -> c_position;
+        }
+
+
+        subgraph cluster_sm {
+            label="schema:map";
+            bgcolor="aquamarine"
+
+            subgraph cluster_mt {
+                label="tables";
+                style=filled;
+                color=lightgray;
+
+                m_instance [label="instance"; shape=box];
+                m_tile [label="tile"; shape=box];
+                m_object [label="object"; shape=box];
+                m_object_is_resource [label="object_is_resource"; shape=box];
+                m_resource [label="resource"; shape=box];
+            }
+
+            map_resource_item_view [label="map.resource_item_view", shape=square, style=filled, fillcolor=lightblue];
+            map_resource_view [label="map.resource_view", shape=square, style=filled, fillcolor=lightblue];
+
+            map_resource_item_view -> c_item;
+            map_resource_item_view -> c_inventory;
+            map_resource_item_view -> c_instance;
+            map_resource_item_view -> m_object_is_resource;
+
+            map_resource_view -> m_object;
+            map_resource_view -> m_object_is_resource;
+            map_resource_view -> m_resource;
+        }
+    }
+}
+#+END_SRC
+
+#+ATTR_LATEX: :width 0.7\linewidth
+#+RESULTS: posgtresql-schemas
+[[file:./img/postgresql_schemas.png]]
+
 ** Updatable Views
 
 #+CAPTION: A ~character.view~ acaba operando como um módulo, sem expor detalhes de implemetação das tabelas originais.
@@ -1335,12 +1406,10 @@ digraph Lyceum {
 
 ** Omnigres (I)
 
-+ Uma extensão para o PostgreSQL visa oferecer melhor qualidade de vida para o
-  desenvolvimento de aplicações, oferece baterias para lidar com tráfego
-  HTTP/WebSockets, roteamento e consultas reativas, etc.
-+ Integrações avançadas: Inclui componentes como ~omni_httpd~ (servidor HTTP),
-  ~omni_session~ (sessões), ~omni_vfs~ (sistema de arquivos virtual), ~omni_types~
-  (Discriminated Unions), ~omni_ledger~, etc.
++ Omnigres é uma extensão do PostgreSQL que adiciona suporte integrado a
+  HTTP/WebSockets, roteamento e consultas reativas.
++ Inclui módulos avançados como ~omni_httpd~, ~omni_session~, ~omni_vfs~, ~omni_types~,
+  ~omni_ledger~, entre outros.
 
 ** Omnigres (II)
 
@@ -1553,15 +1622,60 @@ seguindo dos seguintes comandos (em shells diferentes):
   * AWS e Magalu Cloud.
   * Localmente, criando uma VM QEMU automaticamente com Nix.
 
-#+ATTR_LATEX: :width 0.8\linewidth
-[[./img/nixos_tofu.png]]
+#+NAME: nixos-tofu
+#+BEGIN_SRC dot :file ./img/nixos_tofu.png :cmdline -Kdot -Tpng :exports results
+digraph OpenTofu {
+    rankdir=LR;
+    fontsize=20;
 
-** Nix Modules (I)
+
+    subgraph cluster_tofu {
+        label="Open Tofu";
+        labelloc="t";
+        bgcolor="cornsilk"
+
+        subgraph cluster_stage1 {
+            label="Stage 1: Bootstrap";
+            bgcolor="aquamarine";
+
+            vm [label="VM + Networking\nprovisioning", shape=box, style=filled, fillcolor="azure"];
+            nixos_anywhere [label="NixOS Anywhere\n(Terraform Modules)", shape=box, style=filled, fillcolor="azure"];
+            initial [label="Initial NixOS\n(minimal system)", shape=box, style=filled, fillcolor="azure"];
+
+            vm -> nixos_anywhere -> initial;
+        }
+
+        subgraph cluster_stage2 {
+            label="Stage 2: Full Configuration";
+            bgcolor="aquamarine";
+
+            initial_mods [label="Initial Modules", shape=box, style=filled, fillcolor="azure"];
+            postgres [label="PostgreSQL", shape=box, style=filled, fillcolor="azure"];
+            pgbouncer [label="pgbouncer", shape=box, style=filled, fillcolor="azure"];
+            secrets [label="Secrets Management", shape=box, style=filled, fillcolor="azure"];
+            lyceum [label="Lyceum", shape=box, style=filled, fillcolor="azure"];
+        }
+
+        initial -> initial_mods;
+        initial -> postgres;
+        initial -> pgbouncer;
+        initial -> secrets;
+        initial -> lyceum;
+    }
+
+}
+#+END_SRC
+
+#+ATTR_LATEX: :width 0.8\linewidth
+#+RESULTS: nixos-tofu
+[[file:./img/nixos_tofu.png]]
+
+** NixOS Modules (I)
 
 #+CAPTION: Exemplo de uma VM onde certos módulos são habilitados
 #+ATTR_LATEX: :width 0.45\linewidth
 [[./img/nixos_modules_i.png]]
-** Nix Modules (II)
+** NixOS Modules (II)
 
 #+ATTR_LATEX: :width 0.5\linewidth
 [[./img/nixos_modules_ii.png]]
