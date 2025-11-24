@@ -1,11 +1,11 @@
 #+TITLE: Criando um "MMO-RPG"
 #+SUBTITLE: com Zig, Erlang, Nix e PostgreSQL (e Emacs)
+#+AUTHOR: Marcos Benevides \href{https://github.com/schonfinkel}{\faGithub} \href{https://www.linkedin.com/in/schonfinkel/}{\faLinkedin} \href{https://schonfinkel.github.io/}{\faGlobe}
+#+DATE: \today
 
 :SETTINGS:
 #+STARTUP: inlineimages
 #+STARTUP: beamer
-#+AUTHOR: Marcos Benevides \href{https://github.com/schonfinkel}{\faGithub} \href{https://www.linkedin.com/in/schonfinkel/}{\faLinkedin} \href{https://schonfinkel.github.io/}{\faGlobe}
-#+DATE: \today
 #+DESCRIPTION: 
 #+KEYWORDS: 
 #+LANGUAGE:  pt
