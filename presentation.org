@@ -20,6 +20,7 @@
 #+beamer_theme: SimplePlus
 #+LaTeX_CLASS: beamer
 #+LaTeX_CLASS_OPTIONS: [bigger]
+#+LATEX_HEADER: \institute{Terrateam (\href{https://terrateam.io/}{terrateam.io})}
 #+LATEX_HEADER: \input{./tex/template.tex}
 #+LATEX_HEADER: \usepackage[backend=bibtex]{biblatex}
 #+LATEX_HEADER: \addbibresource{./references.bib}
@@ -599,6 +600,66 @@ digraph gen_server {
 #+RESULTS: fig:erlang-gen_server
 [[file:./img/erlang-gen_server.png]]
 
+** Finite State Machines
+
+#+NAME: fig:erlang-fsm
+#+BEGIN_SRC dot :file ./img/erlang_fsm.png :cmdline -Kdot -Tpng :exports results
+digraph PlayerFSM {
+    rankdir=TD;
+    node [shape=rectangle, style=filled, fillcolor=lightblue];
+    edge [fontsize=10];
+    
+    // States
+    start [shape=point];
+    terminated [shape=doublecircle, fillcolor=gray];
+    
+    // Initial transition
+    start -> list_characters [label="  init / send {ok, {Pid, Email}}"];
+    
+    subgraph cluster_logged_in {
+        label="logged_in";
+        style=filled;
+        fillcolor=khaki;
+        
+        list_characters [label="List Player Characters"];
+        logout_action [label="Logout / \n Deactivate"];
+        joining_map_success [label="Join Map"]
+        
+        list_characters -> joining_map_success;
+        list_characters -> logout_action;
+    }
+    
+    // in_game cluster
+    subgraph cluster_in_game {
+        label="in_game";
+        style=filled;
+        fillcolor=lightcoral;
+        
+        update_character [label="Update Character\n& Fetch Nearby Players"];
+        harvest_resource [label="Harvest Resource"];
+        exit_map_success [label="Deactivate Character"];
+        exit_map_error [label="Exit Map (Error)"];
+        
+        harvest_resource -> update_character;
+        update_character -> harvest_resource;
+        update_character -> exit_map_success;
+        update_character -> exit_map_error;
+    }
+    
+    // Cross-cluster transitions
+    joining_map_success -> update_character;
+    exit_map_success -> list_characters;
+    
+    // Terminal transitions
+    logout_action -> terminated;
+    exit_map_error -> terminated;
+}
+#+END_SRC
+
+#+ATTR_LATEX: :width 0.7\linewidth
+#+RESULTS: fig:erlang-fsm
+[[file:./img/erlang_fsm.png]]
+
 ** ~gen_statem~
 
 + Oferece uma interface para implementar máquinas de estados finitos com estados
@@ -607,6 +668,12 @@ digraph gen_server {
 #+CAPTION: Cada jogador no Lyceum é um processo com um ~gen_statem~.
 #+ATTR_LATEX: :width 0.5\linewidth
 [[./img/erlang_gen_statem.png]]
+
+** Compondo múltiplos ~gen_statem~
+
+#+CAPTION: Fonte - [[https://www.youtube.com/watch?v=endy-GrXov4][Automata Unveiled: A Theoretical Exploration of State Machines - Nelson Vides]] 
+#+ATTR_LATEX: :width \linewidth
+[[file:./img/erlang_gen_statem_composition.png]]
 
 ** Combinando as Estruturas (I)
 
@@ -1491,9 +1558,8 @@ mesmas entradas produz a mesma saída.
 #+end_src
 
 + Cada caminho na ~/nix/store/~ inclui um hash computado a partir de toda a
-  derivação do pacote (todas as entradas: código-fonte, dependências,
-  configurações de compilação, ambiente, etc.), garantindo que até mesmo a menor
-  alteração produza uma nova entrada de armazenamento isolada.
+  derivação do pacote (código-fonte, dependências, configurações de compilação,
+  ambiente).
 
 ** Nix Store (II)
 :PROPERTIES:
@@ -1527,7 +1593,7 @@ mesmas entradas produz a mesma saída.
 + /Infrastructure as code/ desde 2003.
 + O estado do sistema é uma saída de tudo que está sua configuração (em Nix).
 
-** Nix não é Docker
+** Nix não é Docker :noexport:
 #+BEGIN_QUOTE
 "Mas nós já temos o Docker..."
 #+END_QUOTE
@@ -1854,6 +1920,7 @@ digraph Lyceum {
 #+ATTR_BEAMER: :overlay +-
 + Composição é uma propriedade fundamental para alavancar até mesmo as ideias
   mais bizzaras.
+  * APIs consistentes são um plus.
 + Fundamentação teórica sólida tem um efeito multiplicador em termos de
   produtividade.
   * Programação declarativa é naturalmente composicional.
