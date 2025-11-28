@@ -620,7 +620,6 @@ digraph PlayerFSM {
         label="logged_in";
         style=filled;
         fillcolor=khaki;
-        node [fillcolor=white];
         
         list_characters [label="List Player Characters"];
         logout_action [label="Logout / \n Deactivate"];
@@ -635,7 +634,6 @@ digraph PlayerFSM {
         label="in_game";
         style=filled;
         fillcolor=lightcoral;
-        node [fillcolor=white];
         
         update_character [label="Update Character\n& Fetch Nearby Players"];
         harvest_resource [label="Harvest Resource"];
@@ -670,6 +668,12 @@ digraph PlayerFSM {
 #+CAPTION: Cada jogador no Lyceum é um processo com um ~gen_statem~.
 #+ATTR_LATEX: :width 0.5\linewidth
 [[./img/erlang_gen_statem.png]]
+
+** Compondo múltiplos ~gen_statem~
+
+#+CAPTION: Fonte - [[https://www.youtube.com/watch?v=endy-GrXov4][Automata Unveiled: A Theoretical Exploration of State Machines - Nelson Vides]] 
+#+ATTR_LATEX: :width \linewidth
+[[file:./img/erlang_gen_statem_composition.png]]
 
 ** Combinando as Estruturas (I)
 
