@@ -43,11 +43,15 @@
 
           customEmacs = (pkgs.emacsPackagesFor pkgs.emacs-nox).emacsWithPackages (
             epkgs:
-            (with epkgs.melpaPackages; 
+            (with epkgs.melpaPackages;
               [ citeproc fontawesome htmlize ]
               ++ (with epkgs.elpaPackages; [ org ])
             )
           );
+
+          fontsConf = pkgs.makeFontsConf {
+            fontDirectories = [ pkgs.dejavu_fonts pkgs.noto-fonts-color-emoji ];
+          };
         in
         {
           # This sets `pkgs` to a nixpkgs with allowUnfree option set.
@@ -75,6 +79,7 @@
                 export XDG_CACHE_HOME="$(mktemp -d)"
                 export HOME="$(mktemp -d)"
                 export SOURCE_DATE_EPOCH="${toString self.lastModified}"
+                export FONTCONFIG_FILE="${fontsConf}"
                 
                 # Run the build
                 mkdir -p $out
@@ -85,8 +90,8 @@
               '';
               installPhase = ''
                 mkdir -p "$out"
-                find . -name "*.pdf" -type f -exec cp -v {} "$out/" \;
-                printf "\n=== Successfully copied PDFs to output ===\n"
+                cp -r public/. "$out/"
+                printf "\n=== Successfully copied site to output ===\n"
                 ls -la "$out/"
               '';
             };
