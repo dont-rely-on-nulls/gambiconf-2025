@@ -367,4 +367,5 @@ _checkouts/
 *.pdf
 *.tex
 result
+public
 !tex/

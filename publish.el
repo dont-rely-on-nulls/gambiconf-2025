@@ -200,12 +200,38 @@ The PDF will be created in the same directory as the .org file"
     nil))
 
 ;; ==========================
+;; WEBSITE BUILD FUNCTION
+;; ==========================
+
+(defun build-website ()
+  "Generate a minimal index.html in ./public/ linking to presentation.pdf."
+  (let* ((public-dir (concat root-dir "public/"))
+         (index-path (concat public-dir "index.html"))
+         (html "<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"UTF-8\">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+  <title>Presentation</title>
+</head>
+<body>
+  <a href=\"presentation.pdf\">Gambiconf 2025</a>
+</body>
+</html>
+"))
+    (make-directory public-dir t)
+    (with-temp-file index-path
+      (insert html))
+    (message "✓ index.html written to %s" index-path)))
+
+;; ==========================
 ;; AUTO-EXECUTION
 ;; ==========================
 
 ;; When running as a non-interactive batch script (e.g., from Makefile),
 ;; automatically trigger the build process
 (when noninteractive
-  (build-presentation))
+  (build-presentation)
+  (build-website))
 
 ;;; publish.el ends here
