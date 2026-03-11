@@ -100,6 +100,7 @@
           # nix develop
           devShells = {
             ci = pkgs.mkShell {
+              SOURCE_DATE_EPOCH="${toString self.lastModified}";
               buildInputs = with pkgs; [ gnumake customEmacs graphviz texenv ];
             };
 
